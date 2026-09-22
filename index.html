@@ -30,7 +30,21 @@
 </div><div id="help">AUDIO IS PROCEDURALLY GENERATED IN YOUR BROWSER</div></div></div>
 <script>
 (()=>{
-const canvas=document.getElementById('c'),ctx=canvas.getContext('2d',{alpha:false}),menu=document.getElementById('menu'),pause=document.getElementById('pause'),resume=document.getElementById('resume'),start=document.getElementById('start'),walkBtn=document.getElementById('walk'),driveBtn=document.getElementById('drive'),objective=document.getElementById('objective'),signal=document.getElementById('signal'),msg=document.getElementById('msg'),bar=document.querySelector('#stamina i'),fade=document.getElementById('fade');
+const canvas=document.getElementById('c');
+const ctx=canvas.getContext('2d');
+const menu=document.getElementById('menu');
+const pause=document.getElementById('pause');
+const resume=document.getElementById('resume');
+const start=document.getElementById('start');
+const walkBtn=document.getElementById('walk');
+const driveBtn=document.getElementById('drive');
+const objective=document.getElementById('objective');
+const signal=document.getElementById('signal');
+const msg=document.getElementById('msg');
+const bar=document.querySelector('#stamina i');
+const fade=document.getElementById('fade');
+if(!canvas||!ctx||!menu||!start){document.body.style.background='#050708';return;}
+
 let W=0,H=0,D=1,t=0,last=performance.now(),playing=false,locked=false,won=false,paused=false;
 let px=0,pz=0,yaw=0,pitch=0,stamina=1,shake=0,stepTimer=0,radioTimer=7,flash=0,scareTimer=0,mode='walk',started=false;
 const keys={};let audio=null;
@@ -43,7 +57,7 @@ function hash(n){let x=Math.sin(n*127.1)*43758.5453;return x-Math.floor(x)}
 for(let i=0;i<180;i++){let z=6+i*1.35+(hash(i)*.7),side=(hash(i+80)<.5?-1:1)*(6+hash(i+3)*17);trees.push({x:side,z,s:1+hash(i+9)*2.3,a:hash(i+2)});}
 for(let i=0;i<24;i++)poles.push({x:(i%2?1:-1)*5.2,z:15+i*4.4});
 for(let i=0;i<70;i++)rocks.push({x:(hash(i+200)-.5)*24,z:8+hash(i+201)*105,s:.15+hash(i+202)*.8});
-function resize(){D=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;canvas.width=W*D;canvas.height=H*D;ctx.setTransform(D,0,0,D,0,0)}addEventListener('resize',resize);resize();
+function resize(){D=Math.min(devicePixelRatio||1,2);W=Math.max(320,innerWidth);H=Math.max(240,innerHeight);canvas.width=Math.floor(W*D);canvas.height=Math.floor(H*D);ctx.setTransform(D,0,0,D,0,0);ctx.fillStyle='#020304';ctx.fillRect(0,0,W,H)}addEventListener('resize',resize);resize();
 addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;if((e.key==='Escape'||e.key.toLowerCase()==='p')&&playing&&!won){e.preventDefault();togglePause();} });addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
 function togglePause(){paused=!paused;pause.style.display=paused?'grid':'none';if(paused){for(const k in keys)keys[k]=false;document.exitPointerLock?.();msg.textContent='PAUSED';}else{msg.textContent=mode==='drive'?'The engine is running. Drive carefully through the forest.':'The road is quiet. Search for the old relay station.';canvas.requestPointerLock?.();}}
 resume.onclick=()=>{if(paused)togglePause();};
