@@ -20,10 +20,14 @@
 <canvas id="c"></canvas>
 <div id="ui"><div class="corner l">CHAT'S GAME // THE SIGNAL: NIGHTFALL</div><div class="corner r"><b id="objective">OBJECTIVE: REACH THE RELAY STATION</b><br><span id="signal">SIGNAL: — — —</span></div><div id="cross"></div><div id="stamina"><i></i></div><div id="msg">WASD · SHIFT RUN · MOUSE LOOK · ESC RELEASE</div></div>
 <div id="vignette"></div><div id="fade"></div>
-<div id="menu"><div class="panel"><div class="small">FIELD RECORDING 08</div><h1>THE SIGNAL</h1><p>The road shouldn't be here.<br>Neither should the transmission.</p><p>Follow the road, search the ruins, and follow the signal. The light is only the beginning.</p><div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px"><button id="walk">WALK</button><button id="drive">DRIVE</button></div><div id="help">AUDIO IS PROCEDURALLY GENERATED IN YOUR BROWSER</div></div></div>
+<div id="menu"><div class="panel"><div class="small">FIELD RECORDING 08</div><h1>THE SIGNAL</h1><p>The road shouldn't be here.<br>Neither should the transmission.</p><p>Follow the road, search the ruins, and follow the signal. The light is only the beginning.</p><div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px">
+<button id="start">ENTER</button>
+<button id="walk" style="display:none">WALK</button>
+<button id="drive" style="display:none">DRIVE</button>
+</div><div id="help">AUDIO IS PROCEDURALLY GENERATED IN YOUR BROWSER</div></div></div>
 <script>
 (()=>{
-const canvas=document.getElementById('c'),ctx=canvas.getContext('2d',{alpha:false}),menu=document.getElementById('menu'),walkBtn=document.getElementById('walk'),driveBtn=document.getElementById('drive'),objective=document.getElementById('objective'),signal=document.getElementById('signal'),msg=document.getElementById('msg'),bar=document.querySelector('#stamina i'),fade=document.getElementById('fade');
+const canvas=document.getElementById('c'),ctx=canvas.getContext('2d',{alpha:false}),menu=document.getElementById('menu'),start=document.getElementById('start'),walkBtn=document.getElementById('walk'),driveBtn=document.getElementById('drive'),objective=document.getElementById('objective'),signal=document.getElementById('signal'),msg=document.getElementById('msg'),bar=document.querySelector('#stamina i'),fade=document.getElementById('fade');
 let W=0,H=0,D=1,t=0,last=performance.now(),playing=false,locked=false,won=false;
 let px=0,pz=0,yaw=0,pitch=0,stamina=1,shake=0,stepTimer=0,radioTimer=7,flash=0,scareTimer=0,mode='walk',started=false;
 const keys={};let audio=null;
@@ -201,6 +205,7 @@ bar.style.width=(stamina*100)+'%';updateAudio();
 }
 draw();requestAnimationFrame(game);
 }
+start.onclick=()=>{ walkBtn.style.display='inline-block'; driveBtn.style.display='inline-block'; start.style.display='none'; msg.textContent='Choose WALK or DRIVE.'; sound(210,.15,.02); };
 function begin(selected){
  mode=selected; audioInit(); if(audio&&audio.ac.state==='suspended')audio.ac.resume();
  playing=true; started=true; menu.style.display='none'; canvas.requestPointerLock?.();
