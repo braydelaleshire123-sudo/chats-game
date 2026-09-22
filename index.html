@@ -1,23 +1,142 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Chat's Game</title>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CHAT'S GAME — NIGHT ROAD</title>
 <style>
-*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;background:#050608;color:#e8edf2;font-family:system-ui,-apple-system,sans-serif}canvas{display:block;width:100%;height:100%;image-rendering:auto}.hud{position:fixed;inset:0;pointer-events:none}.top{position:absolute;top:18px;left:18px;letter-spacing:.12em;font-size:12px;color:#b8c0c8;text-shadow:0 2px 8px #000}.objective{position:absolute;top:18px;right:18px;text-align:right;font-size:13px;color:#dce4e9}.cross{position:absolute;left:50%;top:50%;width:14px;height:14px;transform:translate(-50%,-50%)}.cross:before,.cross:after{content:"";position:absolute;background:#e7edf0;opacity:.8}.cross:before{width:14px;height:1px;top:6px}.cross:after{height:14px;width:1px;left:6px}.hint{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);padding:9px 14px;border:1px solid #ffffff18;background:#050608aa;border-radius:7px;font-size:12px;color:#c5cdd2}.start{position:absolute;inset:0;display:grid;place-items:center;background:radial-gradient(circle at center,#182026 0,#050608 58%,#020304 100%);pointer-events:auto}.card{max-width:520px;padding:34px;text-align:center;background:#0b0f12dd;border:1px solid #ffffff18;border-radius:14px;box-shadow:0 20px 80px #000}.card h1{margin:0 0 8px;font-size:42px;letter-spacing:.08em}.card p{color:#aeb8bf;line-height:1.6}.card button{margin-top:14px;padding:12px 24px;border:0;border-radius:8px;background:#dfe7eb;color:#081014;font-weight:700;cursor:pointer}.bar{position:absolute;bottom:22px;left:22px;width:150px;height:5px;background:#ffffff18;border-radius:99px;overflow:hidden}.bar i{display:block;height:100%;width:100%;background:#d7e0e4;transition:width .15s}
-</style></head><body><canvas id="game"></canvas><div class="hud"><div class="top">CHAT'S GAME // FIELD TEST 01</div><div class="objective" id="obj">OBJECTIVE: REACH THE LIGHT</div><div class="cross"></div><div class="bar"><i id="stamina"></i></div><div class="hint" id="hint">WASD to move • SHIFT to run • ESC to release mouse</div></div>
-<div class="start" id="start"><div class="card"><h1>CHAT'S GAME</h1><p>A quiet road. A dead signal. Something is waiting beyond the trees.<br>Find the distant light and investigate the source.</p><button id="play">ENTER THE NIGHT</button></div></div>
+*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;background:#020406;color:#e9eef0;font-family:system-ui,-apple-system,sans-serif}
+canvas{display:block;width:100%;height:100%;cursor:crosshair}.hud{position:fixed;inset:0;pointer-events:none}
+.label{position:absolute;top:18px;letter-spacing:.14em;font:11px ui-monospace,monospace;color:#aeb9bd;text-shadow:0 2px 10px #000}
+.left{left:18px}.right{right:18px;text-align:right}.objective{font-size:12px;color:#e4eaec}
+.cross{position:absolute;left:50%;top:50%;width:12px;height:12px;transform:translate(-50%,-50%);opacity:.75}
+.cross:before,.cross:after{content:"";position:absolute;background:#e8eeee}.cross:before{width:12px;height:1px;top:5px}.cross:after{width:1px;height:12px;left:5px}
+.bottom{position:absolute;bottom:18px;left:18px;right:18px;display:flex;align-items:end;justify-content:space-between}
+.bar{width:170px;height:5px;background:#ffffff18;border-radius:10px;overflow:hidden}.bar i{display:block;height:100%;width:100%;background:#dfe7e8;transition:width .1s}
+.hint{font:11px ui-monospace,monospace;color:#b8c2c5;text-shadow:0 2px 8px #000}.audio{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);font:10px ui-monospace,monospace;color:#7f8b8f;opacity:.8}
+.start{position:fixed;inset:0;display:grid;place-items:center;background:radial-gradient(circle at 50% 45%,#172126 0,#070b0d 45%,#010203 100%);z-index:5}
+.card{width:min(560px,90vw);padding:42px;text-align:center;background:#070a0ce8;border:1px solid #ffffff1b;box-shadow:0 30px 100px #000;border-radius:16px}
+h1{margin:0;font-size:44px;letter-spacing:.12em;font-weight:700}.sub{color:#9da9ad;line-height:1.7;margin:14px 0 22px}
+button{padding:13px 26px;border:1px solid #ffffff2b;border-radius:8px;background:#e6ecee;color:#071014;font-weight:800;letter-spacing:.08em;cursor:pointer}
+.fade{position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;z-index:4;transition:opacity 1.5s}
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div class="hud">
+<div class="label left">CHAT'S GAME // NIGHT ROAD 01</div>
+<div class="label right"><div class="objective" id="obj">OBJECTIVE: FIND THE LIGHT</div><div id="status">SIGNAL: LOST</div></div>
+<div class="cross"></div>
+<div class="bottom"><div><div class="hint">WASD MOVE · SHIFT SPRINT · MOUSE LOOK · ESC RELEASE</div><div class="bar"><i id="stamina"></i></div></div></div>
+<div class="audio" id="audioState">AUDIO: READY</div>
+</div>
+<div class="fade" id="fade"></div>
+<div class="start" id="start"><div class="card">
+<h1>CHAT'S GAME</h1>
+<div class="sub">A dead road in the middle of nowhere.<br>The radio stopped. The light ahead did not.<br><br>Head toward it. Stay on the road.</div>
+<button id="play">ENTER THE NIGHT</button>
+</div></div>
 <script>
-(()=>{const c=document.getElementById('game'),x=c.getContext('2d'),start=document.getElementById('start'),play=document.getElementById('play'),obj=document.getElementById('obj'),st=document.getElementById('stamina'),hint=document.getElementById('hint');let w,h,dpr,t=0,run=false,px=0,pz=0,yaw=0,pitch=0,keys={},mouse=false,energy=1,won=false;
-function resize(){dpr=Math.min(devicePixelRatio||1,2);w=innerWidth;h=innerHeight;c.width=w*dpr;c.height=h*dpr;x.setTransform(dpr,0,0,dpr,0,0)}addEventListener('resize',resize);resize();
-addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;if(e.key==='Escape'){mouse=false;document.exitPointerLock?.()}});addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
-c.addEventListener('click',()=>{if(!won)c.requestPointerLock?.()});document.addEventListener('pointerlockchange',()=>mouse=document.pointerLockElement===c);document.addEventListener('mousemove',e=>{if(mouse){yaw+=e.movementX*.0025;pitch=Math.max(-.4,Math.min(.4,pitch-e.movementY*.0015))}});
-play.onclick=()=>{start.style.display='none';c.requestPointerLock?.();hint.textContent='Find the light. Listen for changes.'};
-function project(wx,wz){let dx=wx-px,dz=wz-pz,co=Math.cos(yaw),si=Math.sin(yaw),cx=dx*co-dz*si,cz=dx*si+dz*co;if(cz<=.15)return null;let f=430/cz;return [w/2+cx*f,h*.53+(pitch*220)-f*.0,f]}
-function draw(){t+=.016;x.fillStyle='#050709';x.fillRect(0,0,w,h);let sky=x.createLinearGradient(0,0,0,h);sky.addColorStop(0,'#071019');sky.addColorStop(.48,'#172126');sky.addColorStop(1,'#050607');x.fillStyle=sky;x.fillRect(0,0,w,h);
-let horizon=h*.53;let g=x.createLinearGradient(0,h*.48,0,h);g.addColorStop(0,'#273235');g.addColorStop(1,'#070909');x.fillStyle=g;x.fillRect(0,horizon,w,h-horizon);
-for(let i=0;i<70;i++){let z=5+i*2.7, side=((i*97)%17)-8;for(let s=-1;s<=1;s+=2){let q=project(side+s*(5+(i%4)*1.5),z);if(q){let sz=Math.min(90,Math.max(2,q[2]*.18));x.fillStyle=i%3?'#111a1a':'#182322';x.beginPath();x.moveTo(q[0],q[1]-sz*2.3);x.lineTo(q[0]-sz,q[1]);x.lineTo(q[0]+sz,q[1]);x.fill();}}}
-let road=x.createLinearGradient(0,horizon,0,h);road.addColorStop(0,'#15191a');road.addColorStop(1,'#252728');x.fillStyle=road;x.beginPath();x.moveTo(w*.49,horizon);x.lineTo(w*.51,horizon);x.lineTo(w*.94,h);x.lineTo(w*.06,h);x.closePath();x.fill();
-for(let z=8;z<100;z+=7){let q=project(0,z);if(q){let ww=Math.min(w*.15,500/q[2]*z);x.strokeStyle='#313637';x.lineWidth=Math.max(1,80/q[2]);x.beginPath();x.moveTo(q[0]-ww,q[1]);x.lineTo(q[0]+ww,q[1]);x.stroke()}}
-let light=project(0,68);if(light){let r=Math.max(5,120/light[2]);let rg=x.createRadialGradient(light[0],light[1]-r*1.8,2,light[0],light[1]-r*1.8,r*2.8);rg.addColorStop(0,'#fff7d9');rg.addColorStop(.12,'#e7d9a088');rg.addColorStop(1,'transparent');x.fillStyle=rg;x.fillRect(light[0]-r*3,light[1]-r*5,r*6,r*6);x.fillStyle='#eee3bc';x.fillRect(light[0]-r*.12,light[1]-r*2,r*.24,r*2);x.fillRect(light[0]-r*.8,light[1]-r*2.1,r*1.6,r*.18)}
-let fog=x.createRadialGradient(w/2,h*.55,30,w/2,h*.55,Math.max(w,h)*.7);fog.addColorStop(0,'transparent');fog.addColorStop(1,'#020405cc');x.fillStyle=fog;x.fillRect(0,0,w,h);
-if(Math.sin(t*1.7)>0.96){x.fillStyle='#ffffff08';x.fillRect(0,0,w,h)}if(won){x.fillStyle='#fff8dc22';x.fillRect(0,0,w,h);obj.textContent='OBJECTIVE COMPLETE: SIGNAL FOUND'}}
-function update(){if(start.style.display!=='none'&&!won){draw();requestAnimationFrame(update);return}let f=(keys.w?1:0)-(keys.s?1:0),s=(keys.d?1:0)-(keys.a?1:0),mag=Math.hypot(f,s)||1;if(keys.shift&&energy>0&&f>0){run=true;energy=Math.max(0,energy-.012)}else{run=false;energy=Math.min(1,energy+.006)}let speed=run?.17:.095;px+=(Math.sin(yaw)*f+Math.cos(yaw)*s)/mag*speed;pz+=(Math.cos(yaw)*f-Math.sin(yaw)*s)/mag*speed;let dist=Math.hypot(px,pz-68);if(dist<4&&!won){won=true;obj.textContent='OBJECTIVE COMPLETE: SIGNAL FOUND';hint.textContent='You found it. Refresh to test again.';document.exitPointerLock?.()}st.style.width=(energy*100)+'%';draw();requestAnimationFrame(update)}update()})();
-</script></body></html>
+(()=> {
+const c=document.getElementById('game'),g=c.getContext('2d'),start=document.getElementById('start'),play=document.getElementById('play');
+const st=document.getElementById('stamina'),obj=document.getElementById('obj'),status=document.getElementById('status'),audioState=document.getElementById('audioState'),fade=document.getElementById('fade');
+let W=innerWidth,H=innerHeight,DPR=1,t=0,last=performance.now(),px=0,pz=0,yaw=0,pitch=0,energy=1,playing=false,won=false,locked=false;
+const keys={}; let audio=null,stepClock=0,windGain=0;
+
+function resize(){DPR=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;c.width=W*DPR;c.height=H*DPR;g.setTransform(DPR,0,0,DPR,0,0)}addEventListener('resize',resize);resize();
+addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;if(e.key==='Escape')document.exitPointerLock?.()});
+addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+c.addEventListener('click',()=>{if(playing&&!won)c.requestPointerLock?.()});
+document.addEventListener('pointerlockchange',()=>locked=document.pointerLockElement===c);
+document.addEventListener('mousemove',e=>{if(locked){yaw+=e.movementX*.0022;pitch=Math.max(-.32,Math.min(.32,pitch-e.movementY*.0012))}});
+
+function initAudio(){
+if(audio)return;
+const AC=window.AudioContext||window.webkitAudioContext;if(!AC){audioState.textContent='AUDIO: NOT SUPPORTED';return}
+const ac=new AC(); audio={ac};
+const master=ac.createGain();master.gain.value=.32;master.connect(ac.destination);
+const wind=ac.createGain();wind.gain.value=.045;wind.connect(master);
+const osc=ac.createOscillator();osc.type='sine';osc.frequency.value=42;const og=ac.createGain();og.gain.value=.025;osc.connect(og).connect(wind);osc.start();
+const buf=ac.createBuffer(1,ac.sampleRate*2,ac.sampleRate),data=buf.getChannelData(0);
+for(let i=0;i<data.length;i++)data[i]=(Math.random()*2-1)*.45;
+const noise=ac.createBufferSource();noise.buffer=buf;noise.loop=true;
+const filter=ac.createBiquadFilter();filter.type='lowpass';filter.frequency.value=650;
+noise.connect(filter).connect(wind);noise.start();
+const pulse=ac.createOscillator();pulse.type='triangle';pulse.frequency.value=1.1;const pg=ac.createGain();pg.gain.value=.004;pulse.connect(pg).connect(master);pulse.start();
+audio.master=master;audio.wind=wind;audio.pulse=pg;
+audioState.textContent='AUDIO: ATMOSPHERIC';
+}
+function tone(freq,dur,type='sine',vol=.035){
+if(!audio)return;const ac=audio.ac,o=ac.createOscillator(),a=ac.createGain();o.type=type;o.frequency.setValueAtTime(freq,ac.currentTime);a.gain.setValueAtTime(vol,ac.currentTime);a.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+dur);o.connect(a).connect(audio.master);o.start();o.stop(ac.currentTime+dur+.02);
+}
+function footstep(){tone(72+Math.random()*16,.11,'sine',.055);setTimeout(()=>tone(48,.08,'triangle',.025),25)}
+function distant(){tone(120+Math.random()*40,1.1,'sine',.012)}
+function updateAudio(dt){
+if(!audio)return;const ac=audio.ac;
+audio.wind.gain.setTargetAtTime(.035+(run()? .025:0),ac.currentTime,.5);
+audio.pulse.gain.setTargetAtTime(won?0:.003+(1-Math.min(1,pz/68))*.008,ac.currentTime,.8);
+}
+
+function run(){return keys.shift&&energy>0&&keys.w}
+function project(wx,wz){
+let dx=wx-px,dz=wz-pz,co=Math.cos(yaw),si=Math.sin(yaw),cx=dx*co-dz*si,cz=dx*si+dz*co;
+if(cz<=.35)return null;const f=Math.min(W,H)*.82/cz;
+return [W/2+cx*f,H*.53+(pitch*180)-f*.0,f,cz];
+}
+function tree(wx,wz,size,variant=0){
+const q=project(wx,wz);if(!q)return;
+const [sx,sy,f]=q,scale=Math.max(.5,Math.min(5,f/30))*size,ground=sy;
+g.save();g.translate(sx,ground);g.globalAlpha=Math.min(1,f/4);
+const trunk=Math.max(1,scale*.12);g.fillStyle=variant?'#121817':'#0d1414';g.fillRect(-trunk*.5,-scale*2.3,trunk,scale*2.3);
+g.fillStyle=variant?'#17201f':'#101918';g.beginPath();g.moveTo(0,-scale*7);g.lineTo(-scale*2.1,-scale*2);g.lineTo(-scale*.9,-scale*2.7);g.lineTo(-scale*2.6,-scale*.8);g.lineTo(0,-scale*1.8);g.lineTo(scale*2.5,-scale*.8);g.lineTo(scale*.8,-scale*2.8);g.closePath();g.fill();g.restore();
+}
+function drawGround(){
+const horizon=H*.53;
+const sky=g.createLinearGradient(0,0,0,horizon);sky.addColorStop(0,'#050b10');sky.addColorStop(.55,'#152126');sky.addColorStop(1,'#20292b');g.fillStyle=sky;g.fillRect(0,0,W,horizon);
+const ground=g.createLinearGradient(0,horizon,0,H);ground.addColorStop(0,'#151a1b');ground.addColorStop(1,'#050707');g.fillStyle=ground;g.fillRect(0,horizon,W,H-horizon);
+g.fillStyle='#111617';g.beginPath();g.moveTo(W*.495,horizon);g.lineTo(W*.505,horizon);g.lineTo(W*.93,H);g.lineTo(W*.07,H);g.closePath();g.fill();
+for(let z=6;z<110;z+=7){const q=project(0,z);if(q){const width=Math.min(W*.45,900/q[2]*z);g.strokeStyle='#252b2c';g.lineWidth=Math.max(1,90/q[2]);g.beginPath();g.moveTo(q[0]-width,q[1]);g.lineTo(q[0]+width,q[1]);g.stroke()}}
+}
+function drawRoadside(){
+for(let i=0;i<95;i++){
+const z=5+i*1.25;const spread=7+(i%9)*1.8;const side=((i*37)%13)/13*spread;
+tree(side,z,1.2+(i%4)*.18,i%3);tree(-side,z,1.05+(i%5)*.15,(i+1)%3);
+}
+for(let i=0;i<22;i++){
+const z=10+i*4.3,side=(i%2?1:-1)*(6+(i%4)*2),q=project(side,z);if(!q)continue;
+const [sx,sy,f]=q,s=Math.max(1,Math.min(14,130/q[2]));
+g.fillStyle='#252b2b';g.fillRect(sx-s*.12,sy-s*2,s*.24,s*2);g.fillStyle='#b8b99a';g.fillRect(sx-s*.35,sy-s*2.05,s*.7,s*.22);
+}
+}
+function drawLight(){
+const q=project(0,68);if(!q)return;const [sx,sy,f]=q,r=Math.max(5,110/f);
+for(let i=5;i>=0;i--){g.globalAlpha=.025;g.fillStyle='#ffeec0';g.beginPath();g.arc(sx,sy-r*1.8,r*(i+1)*2.2,0,Math.PI*2);g.fill()}g.globalAlpha=1;
+g.fillStyle='#fff8d6';g.fillRect(sx-r*.1,sy-r*2.1,r*.2,r*2.1);g.fillRect(sx-r*.75,sy-r*2.25,r*1.5,r*.16);
+}
+function drawAtmosphere(){
+const v=g.createRadialGradient(W/2,H*.54,20,W/2,H*.54,Math.max(W,H)*.72);v.addColorStop(0,'transparent');v.addColorStop(.58,'#00000010');v.addColorStop(1,'#000000d8');g.fillStyle=v;g.fillRect(0,0,W,H);
+g.fillStyle='#b9c8ca';for(let i=0;i<45;i++){const x=(i*97+t*3)%W,y=(i*53+Math.sin(t*.2+i)*20)%(H*.62);g.globalAlpha=.025+((i*17)%5)*.008;g.fillRect(x,y,1,1)}g.globalAlpha=1;
+if(Math.sin(t*.7)>.985){g.fillStyle='#ffffff0a';g.fillRect(0,0,W,H)}
+}
+function draw(){
+g.fillStyle='#020406';g.fillRect(0,0,W,H);drawGround();drawRoadside();drawLight();drawAtmosphere();
+if(won){g.fillStyle='#fff5d622';g.fillRect(0,0,W,H)}
+}
+function update(now){
+const dt=Math.min(.05,(now-last)/1000);last=now;t+=dt;
+if(playing&&!won){
+let f=(keys.w?1:0)-(keys.s?1:0),s=(keys.d?1:0)-(keys.a?1:0),m=Math.hypot(f,s)||1;
+if(run()){energy=Math.max(0,energy-dt*.22)}else energy=Math.min(1,energy+dt*.1);
+const speed=run()?.15:.082;px+=(Math.sin(yaw)*f+Math.cos(yaw)*s)/m*speed*(dt*60);pz+=(Math.cos(yaw)*f-Math.sin(yaw)*s)/m*speed*(dt*60);
+if(f||s){stepClock-=dt;if(stepClock<=0){footstep();stepClock=run()?.28:.43}}else stepClock=.05;
+if(Math.random()<dt*.045)distant();
+const dist=Math.hypot(px,pz-68);if(dist<3.8){won=true;obj.textContent='OBJECTIVE COMPLETE: SIGNAL FOUND';status.textContent='SIGNAL: FOUND';fade.style.opacity=.18;tone(440,.8,'sine',.035);setTimeout(()=>{tone(660,.9,'sine',.025)},180);document.exitPointerLock?.()}
+updateAudio(dt);st.style.width=(energy*100)+'%';
+}
+draw();requestAnimationFrame(update);
+}
+play.onclick=()=>{initAudio();if(audio?.ac.state==='suspended')audio.ac.resume();playing=true;start.style.display='none';c.requestPointerLock?.();tone(180,.25,'sine',.025)};
+requestAnimationFrame(update);
+})();
+</script>
+</body></html>
