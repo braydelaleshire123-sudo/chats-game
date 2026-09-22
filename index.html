@@ -130,7 +130,7 @@ const fogStrength=.12+near*.08;
 const fog2=ctx.createLinearGradient(0,H*.43,0,H);
 fog2.addColorStop(0,'#9aa9a910'); fog2.addColorStop(.45,'#78878312'); fog2.addColorStop(1,'#02040466');
 ctx.fillStyle=fog2;ctx.fillRect(0,0,W,H);
-ctx.fillStyle='#b8d0d0'+Math.round(fogStrength*255).toString(16).padStart(2,'0');ctx.fillRect(0,0,W,H);
+ctx.fillStyle='rgba(184,208,208,'+fogStrength+')';ctx.fillRect(0,0,W,H);
 if(Math.sin(t*.33)>.985){ctx.fillStyle='#ffffff09';ctx.fillRect(0,0,W,H)}
 if(Math.sin(t*.17)>.995){ctx.fillStyle='#a8b8c408';ctx.fillRect(0,0,W,H)}
 if(flash>0){ctx.fillStyle='#d9eef022';ctx.fillRect(0,0,W,H);flash-=.025}
