@@ -15,11 +15,14 @@
 #menu{position:fixed;inset:0;z-index:5;display:grid;place-items:center;background:radial-gradient(circle at 50% 43%,#1a2528 0,#080d0f 42%,#010203 100%)}.panel{width:min(610px,90vw);padding:46px;text-align:center;background:#05080ae8;border:1px solid #ffffff18;border-radius:14px;box-shadow:0 30px 120px #000}.panel h1{font-size:46px;letter-spacing:.14em;margin:0 0 4px}.panel .small{font:10px ui-monospace,monospace;letter-spacing:.22em;color:#758083}.panel p{color:#9da9ac;line-height:1.7}.panel button{margin-top:14px;padding:13px 28px;border:1px solid #ffffff28;border-radius:7px;background:#e7ecec;color:#071012;font-weight:800;letter-spacing:.1em;cursor:pointer}
 #help{font:10px ui-monospace,monospace;color:#6e797b;margin-top:18px}
 #vignette{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 45%,rgba(0,0,0,.38) 100%);mix-blend-mode:multiply}
+#pause{position:fixed;inset:0;z-index:6;display:none;place-items:center;background:rgba(0,0,0,.72);backdrop-filter:blur(5px);pointer-events:auto}.pausePanel{width:min(420px,88vw);padding:34px;text-align:center;background:#05080aee;border:1px solid #ffffff18;border-radius:12px;box-shadow:0 30px 100px #000}.pausePanel h2{letter-spacing:.18em;margin:0 0 8px}.pausePanel p{color:#9da9ac;font:11px ui-monospace,monospace}.pausePanel button{padding:12px 24px;border:1px solid #ffffff28;border-radius:7px;background:#e7ecec;color:#071012;font-weight:800;letter-spacing:.1em;cursor:pointer}
+</style>
 </head>
 <body>
 <canvas id="c"></canvas>
 <div id="ui"><div class="corner l">CHAT'S GAME // THE SIGNAL: NIGHTFALL</div><div class="corner r"><b id="objective">OBJECTIVE: REACH THE RELAY STATION</b><br><span id="signal">SIGNAL: — — —</span></div><div id="cross"></div><div id="stamina"><i></i></div><div id="msg">WASD · SHIFT RUN · MOUSE LOOK · ESC RELEASE</div></div>
 <div id="vignette"></div><div id="fade"></div>
+<div id="pause"><div class="pausePanel"><h2>PAUSED</h2><p>THE SIGNAL IS STILL OUT THERE.</p><button id="resume" type="button">RESUME</button><div style="margin-top:12px;color:#687477;font:10px ui-monospace,monospace">P = PAUSE · ESC = PAUSE</div></div></div>
 <div id="menu"><div class="panel"><div class="small">FIELD RECORDING 08</div><h1>THE SIGNAL</h1><p>The road shouldn't be here.<br>Neither should the transmission.</p><p>Follow the road, search the ruins, and follow the signal. The light is only the beginning.</p><div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px">
 <button id="start" type="button">ENTER</button>
 <button id="walk" type="button" style="display:none">WALK</button>
@@ -27,8 +30,8 @@
 </div><div id="help">AUDIO IS PROCEDURALLY GENERATED IN YOUR BROWSER</div></div></div>
 <script>
 (()=>{
-const canvas=document.getElementById('c'),ctx=canvas.getContext('2d',{alpha:false}),menu=document.getElementById('menu'),start=document.getElementById('start'),walkBtn=document.getElementById('walk'),driveBtn=document.getElementById('drive'),objective=document.getElementById('objective'),signal=document.getElementById('signal'),msg=document.getElementById('msg'),bar=document.querySelector('#stamina i'),fade=document.getElementById('fade');
-let W=0,H=0,D=1,t=0,last=performance.now(),playing=false,locked=false,won=false;
+const canvas=document.getElementById('c'),ctx=canvas.getContext('2d',{alpha:false}),menu=document.getElementById('menu'),pause=document.getElementById('pause'),resume=document.getElementById('resume'),start=document.getElementById('start'),walkBtn=document.getElementById('walk'),driveBtn=document.getElementById('drive'),objective=document.getElementById('objective'),signal=document.getElementById('signal'),msg=document.getElementById('msg'),bar=document.querySelector('#stamina i'),fade=document.getElementById('fade');
+let W=0,H=0,D=1,t=0,last=performance.now(),playing=false,locked=false,won=false,paused=false;
 let px=0,pz=0,yaw=0,pitch=0,stamina=1,shake=0,stepTimer=0,radioTimer=7,flash=0,scareTimer=0,mode='walk',started=false;
 const keys={};let audio=null;
 const trees=[],poles=[],rocks=[],ruins=[],fireflies=[];
@@ -41,7 +44,9 @@ for(let i=0;i<180;i++){let z=6+i*1.35+(hash(i)*.7),side=(hash(i+80)<.5?-1:1)*(6+
 for(let i=0;i<24;i++)poles.push({x:(i%2?1:-1)*5.2,z:15+i*4.4});
 for(let i=0;i<70;i++)rocks.push({x:(hash(i+200)-.5)*24,z:8+hash(i+201)*105,s:.15+hash(i+202)*.8});
 function resize(){D=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;canvas.width=W*D;canvas.height=H*D;ctx.setTransform(D,0,0,D,0,0)}addEventListener('resize',resize);resize();
-addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;if(e.key==='Escape')document.exitPointerLock?.()});addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;if((e.key==='Escape'||e.key.toLowerCase()==='p')&&playing&&!won){e.preventDefault();togglePause();} });addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+function togglePause(){paused=!paused;pause.style.display=paused?'grid':'none';if(paused){for(const k in keys)keys[k]=false;document.exitPointerLock?.();msg.textContent='PAUSED';}else{msg.textContent=mode==='drive'?'The engine is running. Drive carefully through the forest.':'The road is quiet. Search for the old relay station.';canvas.requestPointerLock?.();}}
+resume.onclick=()=>{if(paused)togglePause();};
 canvas.addEventListener('click',()=>{if(playing&&!won)canvas.requestPointerLock?.()});
 document.addEventListener('visibilitychange',()=>{ if(document.hidden){ for(const k in keys)keys[k]=false; } });document.addEventListener('pointerlockchange',()=>locked=document.pointerLockElement===canvas);
 document.addEventListener('mousemove',e=>{if(locked){yaw+=e.movementX*.0022;pitch=Math.max(-.35,Math.min(.35,pitch-e.movementY*.0013));shake=Math.min(.7,shake+Math.abs(e.movementX)*.0004)}});
@@ -208,7 +213,7 @@ draw();requestAnimationFrame(game);
 start.onclick=(e)=>{e.preventDefault();begin('walk');};
 function begin(selected){
  mode=selected; audioInit(); if(audio&&audio.ac.state==='suspended')audio.ac.resume();
- playing=true; started=true; menu.style.display='none'; menu.style.pointerEvents='none'; canvas.focus(); canvas.requestPointerLock?.();
+ playing=true; started=true; paused=false; menu.style.display='none'; menu.style.pointerEvents='none'; menu.style.pointerEvents='none'; canvas.focus(); canvas.requestPointerLock?.();
  doorSound();
  if(mode==='drive'){startEngine(); objective.textContent='OBJECTIVE: DRIVE TO THE RELAY STATION'; msg.textContent='The engine is running. Drive carefully through the forest.'; sound(72,.6,.03,'sawtooth',.1);}
  else {objective.textContent='OBJECTIVE: REACH THE RELAY STATION'; msg.textContent='The road is quiet. Search for the old relay station.'; sound(150,.3,.02);}
