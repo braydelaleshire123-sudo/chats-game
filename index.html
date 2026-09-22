@@ -21,9 +21,9 @@
 <div id="ui"><div class="corner l">CHAT'S GAME // THE SIGNAL: NIGHTFALL</div><div class="corner r"><b id="objective">OBJECTIVE: REACH THE RELAY STATION</b><br><span id="signal">SIGNAL: — — —</span></div><div id="cross"></div><div id="stamina"><i></i></div><div id="msg">WASD · SHIFT RUN · MOUSE LOOK · ESC RELEASE</div></div>
 <div id="vignette"></div><div id="fade"></div>
 <div id="menu"><div class="panel"><div class="small">FIELD RECORDING 08</div><h1>THE SIGNAL</h1><p>The road shouldn't be here.<br>Neither should the transmission.</p><p>Follow the road, search the ruins, and follow the signal. The light is only the beginning.</p><div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px">
-<button id="start">ENTER</button>
-<button id="walk" style="display:none">WALK</button>
-<button id="drive" style="display:none">DRIVE</button>
+<button id="start" type="button">ENTER</button>
+<button id="walk" type="button" style="display:none">WALK</button>
+<button id="drive" type="button" style="display:none">DRIVE</button>
 </div><div id="help">AUDIO IS PROCEDURALLY GENERATED IN YOUR BROWSER</div></div></div>
 <script>
 (()=>{
@@ -205,16 +205,16 @@ bar.style.width=(stamina*100)+'%';updateAudio();
 }
 draw();requestAnimationFrame(game);
 }
-start.onclick=()=>{ walkBtn.style.display='inline-block'; driveBtn.style.display='inline-block'; start.style.display='none'; msg.textContent='Choose WALK or DRIVE.'; sound(210,.15,.02); };
+start.onclick=(e)=>{e.preventDefault();begin('walk');};
 function begin(selected){
  mode=selected; audioInit(); if(audio&&audio.ac.state==='suspended')audio.ac.resume();
- playing=true; started=true; menu.style.display='none'; canvas.requestPointerLock?.();
+ playing=true; started=true; menu.style.display='none'; menu.style.pointerEvents='none'; canvas.focus(); canvas.requestPointerLock?.();
  doorSound();
  if(mode==='drive'){startEngine(); objective.textContent='OBJECTIVE: DRIVE TO THE RELAY STATION'; msg.textContent='The engine is running. Drive carefully through the forest.'; sound(72,.6,.03,'sawtooth',.1);}
  else {objective.textContent='OBJECTIVE: REACH THE RELAY STATION'; msg.textContent='The road is quiet. Search for the old relay station.'; sound(150,.3,.02);}
 }
-walkBtn.onclick=()=>begin('walk');
-driveBtn.onclick=()=>begin('drive');
+walkBtn.onclick=(e)=>{e.preventDefault();begin('walk');};
+driveBtn.onclick=(e)=>{e.preventDefault();begin('drive');};
 addEventListener('keydown',e=>{if(e.key.toLowerCase()==='h'&&playing&&!won)hornSound();});
 requestAnimationFrame(game);
 })();
