@@ -1,243 +1,45 @@
 <!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>CHAT'S GAME — THE SIGNAL: NIGHTFALL</title>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>THE SIGNAL</title>
 <style>
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#020304;color:#e7ecec;font-family:Inter,system-ui,-apple-system,sans-serif}canvas{width:100%;height:100%;display:block;cursor:crosshair}
-#ui{position:fixed;inset:0;pointer-events:none;text-shadow:0 2px 10px #000}
-.corner{position:absolute;top:18px;font:11px ui-monospace,monospace;letter-spacing:.16em;color:#aeb8ba}.l{left:18px}.r{right:18px;text-align:right}.r b{font-weight:500;color:#e6ece6}
-#cross{position:absolute;left:50%;top:50%;width:14px;height:14px;transform:translate(-50%,-50%);opacity:.6}#cross:before,#cross:after{content:"";position:absolute;background:#e8eded}#cross:before{width:14px;height:1px;top:6px}#cross:after{height:14px;width:1px;left:6px}
-#msg{position:absolute;left:50%;bottom:48px;transform:translateX(-50%);font:12px ui-monospace,monospace;color:#c8d0d0;opacity:.9;text-align:center}
-#stamina{position:absolute;left:18px;bottom:19px;width:190px;height:4px;background:#ffffff18;border-radius:9px;overflow:hidden}#stamina i{display:block;width:100%;height:100%;background:#d8dfdf}
-#fade{position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity 1s;z-index:4}
-#menu{position:fixed;inset:0;z-index:5;display:grid;place-items:center;background:radial-gradient(circle at 50% 43%,#1a2528 0,#080d0f 42%,#010203 100%)}.panel{width:min(610px,90vw);padding:46px;text-align:center;background:#05080ae8;border:1px solid #ffffff18;border-radius:14px;box-shadow:0 30px 120px #000}.panel h1{font-size:46px;letter-spacing:.14em;margin:0 0 4px}.panel .small{font:10px ui-monospace,monospace;letter-spacing:.22em;color:#758083}.panel p{color:#9da9ac;line-height:1.7}.panel button{margin-top:14px;padding:13px 28px;border:1px solid #ffffff28;border-radius:7px;background:#e7ecec;color:#071012;font-weight:800;letter-spacing:.1em;cursor:pointer}
-#help{font:10px ui-monospace,monospace;color:#6e797b;margin-top:18px}
-#vignette{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 45%,rgba(0,0,0,.38) 100%);mix-blend-mode:multiply}
-#pause{position:fixed;inset:0;z-index:6;display:none;place-items:center;background:rgba(0,0,0,.72);backdrop-filter:blur(5px);pointer-events:auto}.pausePanel{width:min(420px,88vw);padding:34px;text-align:center;background:#05080aee;border:1px solid #ffffff18;border-radius:12px;box-shadow:0 30px 100px #000}.pausePanel h2{letter-spacing:.18em;margin:0 0 8px}.pausePanel p{color:#9da9ac;font:11px ui-monospace,monospace}.pausePanel button{padding:12px 24px;border:1px solid #ffffff28;border-radius:7px;background:#e7ecec;color:#071012;font-weight:800;letter-spacing:.1em;cursor:pointer}
-</style>
-</head>
-<body>
-<canvas id="c"></canvas>
-<div id="ui"><div class="corner l">CHAT'S GAME // THE SIGNAL: NIGHTFALL</div><div class="corner r"><b id="objective">OBJECTIVE: REACH THE RELAY STATION</b><br><span id="signal">SIGNAL: — — —</span></div><div id="cross"></div><div id="stamina"><i></i></div><div id="msg">WASD · SHIFT RUN · MOUSE LOOK · ESC RELEASE</div></div>
-<div id="vignette"></div><div id="fade"></div>
-<div id="pause"><div class="pausePanel"><h2>PAUSED</h2><p>THE SIGNAL IS STILL OUT THERE.</p><button id="resume" type="button">RESUME</button><div style="margin-top:12px;color:#687477;font:10px ui-monospace,monospace">P = PAUSE · ESC = PAUSE</div></div></div>
-<div id="menu"><div class="panel"><div class="small">FIELD RECORDING 08</div><h1>THE SIGNAL</h1><p>The road shouldn't be here.<br>Neither should the transmission.</p><p>Follow the road, search the ruins, and follow the signal. The light is only the beginning.</p><div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px">
-<button id="start" type="button">ENTER</button>
-<button id="walk" type="button" style="display:none">WALK</button>
-<button id="drive" type="button" style="display:none">DRIVE</button>
-</div><div id="help">AUDIO IS PROCEDURALLY GENERATED IN YOUR BROWSER</div></div></div>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050708;color:#e8eeee;font-family:system-ui,-apple-system,sans-serif}canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
+#menu{position:fixed;inset:0;display:grid;place-items:center;background:radial-gradient(circle,#172124,#06090a 55%,#010202);z-index:5}.panel{width:min(600px,90vw);padding:42px;text-align:center;background:#050809ee;border:1px solid #ffffff22;border-radius:14px;box-shadow:0 25px 100px #000}.small{font:11px monospace;letter-spacing:.2em;color:#819093}.panel h1{font-size:48px;letter-spacing:.16em;margin:8px 0}.panel p{color:#aab4b5;line-height:1.7}.btn{padding:13px 28px;margin:8px;border:1px solid #ffffff30;border-radius:7px;background:#e8eeee;color:#071012;font-weight:800;letter-spacing:.12em;cursor:pointer}
+#hud{display:none;position:fixed;inset:0;pointer-events:none;font:11px monospace;text-shadow:0 2px 8px #000}.tl{position:absolute;top:18px;left:18px}.tr{position:absolute;top:18px;right:18px;text-align:right}.cross{position:absolute;left:50%;top:50%;width:14px;height:14px;transform:translate(-50%,-50%)}.cross:before,.cross:after{content:"";position:absolute;background:#e8eeee}.cross:before{left:0;top:6px;width:14px;height:1px}.cross:after{left:6px;top:0;width:1px;height:14px}.msg{position:absolute;bottom:35px;left:50%;transform:translateX(-50%);white-space:nowrap}
+#pause{display:none;position:fixed;inset:0;z-index:6;place-items:center;background:#000b}.pause{padding:35px 55px;text-align:center;background:#070a0bee;border:1px solid #ffffff22;border-radius:12px}
+</style></head><body>
+<canvas id="game"></canvas>
+<div id="hud"><div class="tl">THE SIGNAL // NIGHTFALL</div><div class="tr" id="obj">OBJECTIVE: REACH THE RELAY<br><span id="sig">SIGNAL: SEARCHING</span></div><div class="cross"></div><div class="msg" id="msg">WASD MOVE · MOUSE LOOK · P PAUSE</div></div>
+<div id="pause"><div class="pause"><h2>PAUSED</h2><p>The signal is still out there.</p><button class="btn" id="resume">RESUME</button></div></div>
+<div id="menu"><div class="panel"><div class="small">FIELD RECORDING 08</div><h1>THE SIGNAL</h1><p>The road shouldn't be here.<br>Neither should the transmission.</p><p>Follow the road through the forest and find the relay station.</p><button class="btn" id="start">ENTER</button><div id="choices" style="display:none"><button class="btn" id="walk">WALK</button><button class="btn" id="drive">DRIVE</button></div><div style="margin-top:16px;font:10px monospace;color:#667274">AUDIO STARTS AFTER ENTER</div></div></div>
 <script>
-(()=>{
-const canvas=document.getElementById('c');
-const ctx=canvas.getContext('2d');
-const menu=document.getElementById('menu');
-const pause=document.getElementById('pause');
-const resume=document.getElementById('resume');
-const start=document.getElementById('start');
-const walkBtn=document.getElementById('walk');
-const driveBtn=document.getElementById('drive');
-const objective=document.getElementById('objective');
-const signal=document.getElementById('signal');
-const msg=document.getElementById('msg');
-const bar=document.querySelector('#stamina i');
-const fade=document.getElementById('fade');
-if(!canvas||!ctx||!menu||!start){document.body.style.background='#050708';return;}
-
-let W=0,H=0,D=1,t=0,last=performance.now(),playing=false,locked=false,won=false,paused=false;
-let px=0,pz=0,yaw=0,pitch=0,stamina=1,shake=0,stepTimer=0,radioTimer=7,flash=0,scareTimer=0,mode='walk',started=false;
-const keys={};let audio=null;
-const trees=[],poles=[],rocks=[],ruins=[],fireflies=[];
-let engineOsc=null,engineGain=null,engineFilter=null;
-for(let i=0;i<90;i++)fireflies.push({x:(hash(i+700)-.5)*34,z:18+hash(i+701)*72,y:.5+hash(i+702)*3,ph:hash(i+703)*6.28});
-for(let i=0;i<10;i++)ruins.push({x:(i%2?-1:1)*(7+hash(i+500)*8),z:34+hash(i+501)*46,w:1.8+hash(i+502)*2.5,h:1.2+hash(i+503)*2.2,a:hash(i+504)});
-
-function hash(n){let x=Math.sin(n*127.1)*43758.5453;return x-Math.floor(x)}
-for(let i=0;i<180;i++){let z=6+i*1.35+(hash(i)*.7),side=(hash(i+80)<.5?-1:1)*(6+hash(i+3)*17);trees.push({x:side,z,s:1+hash(i+9)*2.3,a:hash(i+2)});}
-for(let i=0;i<24;i++)poles.push({x:(i%2?1:-1)*5.2,z:15+i*4.4});
-for(let i=0;i<70;i++)rocks.push({x:(hash(i+200)-.5)*24,z:8+hash(i+201)*105,s:.15+hash(i+202)*.8});
-function resize(){D=Math.min(devicePixelRatio||1,2);W=Math.max(320,innerWidth);H=Math.max(240,innerHeight);canvas.width=Math.floor(W*D);canvas.height=Math.floor(H*D);ctx.setTransform(D,0,0,D,0,0);ctx.fillStyle='#020304';ctx.fillRect(0,0,W,H)}addEventListener('resize',resize);resize();
-addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;if((e.key==='Escape'||e.key.toLowerCase()==='p')&&playing&&!won){e.preventDefault();togglePause();} });addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
-function togglePause(){paused=!paused;pause.style.display=paused?'grid':'none';if(paused){for(const k in keys)keys[k]=false;document.exitPointerLock?.();msg.textContent='PAUSED';}else{msg.textContent=mode==='drive'?'The engine is running. Drive carefully through the forest.':'The road is quiet. Search for the old relay station.';canvas.requestPointerLock?.();}}
-resume.onclick=()=>{if(paused)togglePause();};
-canvas.addEventListener('click',()=>{if(playing&&!won)canvas.requestPointerLock?.()});
-document.addEventListener('visibilitychange',()=>{ if(document.hidden){ for(const k in keys)keys[k]=false; } });document.addEventListener('pointerlockchange',()=>locked=document.pointerLockElement===canvas);
-document.addEventListener('mousemove',e=>{if(locked){yaw+=e.movementX*.0022;pitch=Math.max(-.35,Math.min(.35,pitch-e.movementY*.0013));shake=Math.min(.7,shake+Math.abs(e.movementX)*.0004)}});
-function audioInit(){
-if(audio)return;const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
-const ac=new AC(),master=ac.createGain();master.gain.value=.3;master.connect(ac.destination);
-function noiseNode(){const b=ac.createBuffer(1,ac.sampleRate*2,ac.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;let s=ac.createBufferSource();s.buffer=b;s.loop=true;return s}
-const n=noiseNode(),f=ac.createBiquadFilter(),ng=ac.createGain();f.type='lowpass';f.frequency.value=520;ng.gain.value=.055;n.connect(f).connect(ng).connect(master);n.start();
-const hum=ac.createOscillator(),hg=ac.createGain();hum.type='sine';hum.frequency.value=39;hg.gain.value=.018;hum.connect(hg).connect(master);hum.start();
-const pulse=ac.createOscillator(),pg=ac.createGain();pulse.type='triangle';pulse.frequency.value=.8;pg.gain.value=.003;pulse.connect(pg).connect(master);pulse.start();
-audio={ac,master,wind:ng,pulse:pg};
-}
-function sound(freq,dur,vol,type='sine',delay=0){
-if(!audio)return;const ac=audio.ac,o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.setValueAtTime(freq,ac.currentTime+delay);g.gain.setValueAtTime(vol,ac.currentTime+delay);g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+delay+dur);o.connect(g).connect(audio.master);o.start(ac.currentTime+delay);o.stop(ac.currentTime+delay+dur+.03);
-}
-function foot(){sound(58+Math.random()*12,.12,.045,'sine');sound(105,.07,.012,'triangle',.035)}
-function radio(){sound(420,.18,.018,'square');sound(700,.12,.012,'square',.09);sound(240,.4,.009,'sine',.22)}
-function project(wx,wz){
-let dx=wx-px,dz=wz-pz,co=Math.cos(yaw),si=Math.sin(yaw),cx=dx*co-dz*si,cz=dx*si+dz*co;if(cz<.4)return null;
-let f=Math.min(W,H)*.86/cz;return [W/2+cx*f,H*.52+pitch*180-f*.018,f,cz];
-}
-function sky(){
-let horizon=H*.52,g=ctx.createLinearGradient(0,0,0,horizon);g.addColorStop(0,'#03080c');g.addColorStop(.55,'#101a1d');g.addColorStop(1,'#263032');ctx.fillStyle=g;ctx.fillRect(0,0,W,horizon);
-ctx.fillStyle='#d6e1df';ctx.globalAlpha=.28;for(let i=0;i<75;i++){let x=(i*173)%W,y=(i*71)%Math.max(1,horizon*.7);ctx.fillRect(x,y,1,1)}ctx.globalAlpha=1;
-}
-function ground(){
-let hz=H*.52,g=ctx.createLinearGradient(0,hz,0,H);g.addColorStop(0,'#171d1e');g.addColorStop(1,'#050707');ctx.fillStyle=g;ctx.fillRect(0,hz,W,H-hz);
-ctx.fillStyle='#111516';ctx.beginPath();ctx.moveTo(W*.498,hz);ctx.lineTo(W*.502,hz);ctx.lineTo(W*.96,H);ctx.lineTo(W*.04,H);ctx.closePath();ctx.fill();
-for(let z=7;z<120;z+=5){let q=project(0,z);if(q){let width=Math.min(W*.48,1100/q[2]*z);ctx.strokeStyle=(z%10?'#202526':'#292f30');ctx.lineWidth=Math.max(.7,75/q[2]);ctx.beginPath();ctx.moveTo(q[0]-width,q[1]);ctx.lineTo(q[0]+width,q[1]);ctx.stroke()}}
-}
-function drawTree(o){
-let q=project(o.x,o.z);if(!q)return;let [sx,sy,f]=q,s=Math.max(1,Math.min(190,o.s*f*.035));ctx.save();ctx.globalAlpha=Math.min(.95,f/7);ctx.fillStyle='#0b1010';ctx.fillRect(sx-s*.07,sy-s*2.5,s*.14,s*2.5);ctx.fillStyle=o.a>.55?'#111918':'#0c1413';ctx.beginPath();ctx.moveTo(sx,sy-s*7);ctx.lineTo(sx-s*1.8,sy-s*2.1);ctx.lineTo(sx-s*.75,sy-s*2.6);ctx.lineTo(sx-s*2.1,sy-s*.9);ctx.lineTo(sx,sy-s*1.8);ctx.lineTo(sx+s*2.2,sy-s*.8);ctx.lineTo(sx+s*.8,sy-s*2.7);ctx.closePath();ctx.fill();ctx.restore();
-}
-function drawPole(o){
-let q=project(o.x,o.z);if(!q)return;let [sx,sy,f]=q,s=Math.max(1,70/f);ctx.fillStyle='#101516';ctx.fillRect(sx-s*.5,sy-s*3.5,s, s*3.5);ctx.fillStyle='#c7c5a5';ctx.fillRect(sx-s*2.5,sy-s*3.55,s*5,.5);ctx.fillStyle='#e7d9a5';ctx.fillRect(sx-s*.25,sy-s*3.7,s*.5,s*.4);
-}
-function drawRock(o){let q=project(o.x,o.z);if(!q)return;let s=Math.max(1,o.s*q[2]*.022);ctx.fillStyle='#171d1d';ctx.beginPath();ctx.ellipse(q[0],q[1],s*1.6,s*.65,0,0,Math.PI*2);ctx.fill()}
-function drawRuins(o){
-  let q=project(o.x,o.z); if(!q)return;
-  let [sx,sy,f]=q, w=o.w*f*.035, h=o.h*f*.035;
-  if(w<1)return;
-  ctx.save(); ctx.globalAlpha=Math.min(.9,f/8);
-  ctx.fillStyle='#121817'; ctx.fillRect(sx-w,sy-h,w*2,h);
-  ctx.fillStyle='#1d2523'; ctx.fillRect(sx-w*.75,sy-h*.85,w*.35,h*.65);
-  ctx.fillStyle='#070a0a'; ctx.fillRect(sx+w*.05,sy-h*.58,w*.28,h*.58);
-  ctx.fillStyle='#2a302c'; ctx.fillRect(sx-w,sy-h,w*2,h*.07);
-  ctx.restore();
-}
-function drawFireflies(){
-  for(const o of fireflies){
-    const q=project(o.x,o.z); if(!q)continue;
-    const s=Math.max(.6,Math.min(3,q[2]*.012));
-    const yy=q[1]-o.y*q[2]*.015+Math.sin(t*1.5+o.ph)*3;
-    ctx.globalAlpha=.25+.25*Math.sin(t*2+o.ph);
-    ctx.fillStyle='#d9e7a8'; ctx.fillRect(q[0],yy,s,s);
-  }
-  ctx.globalAlpha=1;
-}
-function drawLight(){
-let q=project(0,86);if(!q)return;let r=Math.max(4,105/q[2]),sx=q[0],sy=q[1]-r*2.5;
-for(let i=7;i>0;i--){ctx.globalAlpha=.018;ctx.fillStyle='#ffe7ae';ctx.beginPath();ctx.arc(sx,sy,r*i*2.1,0,Math.PI*2);ctx.fill()}ctx.globalAlpha=1;ctx.fillStyle='#fff5ca';ctx.fillRect(sx-r*.13,sy-r*1.7,r*.26,r*1.7);ctx.fillRect(sx-r*.9,sy-r*1.9,r*1.8,r*.18);
-}
-function mountains(){
-  const hz=H*.52;
-  ctx.save(); ctx.globalAlpha=.65;
-  ctx.fillStyle='#0b1214'; ctx.beginPath(); ctx.moveTo(0,hz);
-  for(let x=0;x<=W;x+=24){
-    const y=hz-38-Math.sin(x*.008+1.2)*28-Math.sin(x*.021)*15;
-    ctx.lineTo(x,y);
-  }
-  ctx.lineTo(W,hz);ctx.closePath();ctx.fill();
-  ctx.globalAlpha=.22;ctx.fillStyle='#52605c';
-  ctx.beginPath();ctx.moveTo(0,hz);
-  for(let x=0;x<=W;x+=30){ctx.lineTo(x,hz-18-Math.sin(x*.012)*12)}
-  ctx.lineTo(W,hz);ctx.closePath();ctx.fill();ctx.restore();
-}
-function atmosphere(){
-let fog=ctx.createRadialGradient(W/2,H*.54,20,W/2,H*.54,Math.max(W,H)*.75);fog.addColorStop(0,'#ffffff00');fog.addColorStop(.55,'#06101218');fog.addColorStop(1,'#010203e8');ctx.fillStyle=fog;ctx.fillRect(0,0,W,H);
-let near=Math.max(0,1-pz/86);
-const fogStrength=.12+near*.08;
-const fog2=ctx.createLinearGradient(0,H*.43,0,H);
-fog2.addColorStop(0,'#9aa9a910'); fog2.addColorStop(.45,'#78878312'); fog2.addColorStop(1,'#02040466');
-ctx.fillStyle=fog2;ctx.fillRect(0,0,W,H);
-ctx.fillStyle='rgba(184,208,208,'+fogStrength+')';ctx.fillRect(0,0,W,H);
-if(Math.sin(t*.33)>.985){ctx.fillStyle='#ffffff09';ctx.fillRect(0,0,W,H)}
-if(Math.sin(t*.17)>.995){ctx.fillStyle='#a8b8c408';ctx.fillRect(0,0,W,H)}
-if(flash>0){ctx.fillStyle='#d9eef022';ctx.fillRect(0,0,W,H);flash-=.025}
-}
-function draw(){
-ctx.fillStyle='#020304';ctx.fillRect(0,0,W,H);sky();mountains();ground();
-const all=[
- ...rocks.map(o=>({z:o.z,type:0,o})),
- ...trees.map(o=>({z:o.z,type:1,o})),
- ...poles.map(o=>({z:o.z,type:2,o})),
- ...ruins.map(o=>({z:o.z,type:3,o}))
-].sort((a,b)=>b.z-a.z);
-for(const a of all){if(a.type===0)drawRock(a.o);else if(a.type===1)drawTree(a.o);else if(a.type===2)drawPole(a.o);else drawRuins(a.o)}
-drawLight();drawFireflies();atmosphere();drawVehicle();
-}
-function startEngine(){
- if(!audio||engineOsc)return;
- const ac=audio.ac;
- engineOsc=ac.createOscillator(); engineGain=ac.createGain(); engineFilter=ac.createBiquadFilter();
- engineOsc.type='sawtooth'; engineOsc.frequency.value=58; engineGain.gain.value=.0001;
- engineFilter.type='lowpass'; engineFilter.frequency.value=650;
- engineOsc.connect(engineFilter).connect(engineGain).connect(audio.master); engineOsc.start();
-}
-function updateEngine(moving){
- if(!audio||mode!=='drive')return;
- startEngine(); const ac=audio.ac, target=moving?.028:.012;
- engineGain.gain.setTargetAtTime(target,ac.currentTime,.08);
- engineOsc.frequency.setTargetAtTime(moving?72+Math.abs((keys.w?1:0)-(keys.s?1:0))*32:55,ac.currentTime,.12);
-}
-function doorSound(){sound(95,.12,.025,'square');sound(55,.22,.018,'sine',.08)}
-function hornSound(){sound(180,.35,.035,'sawtooth');sound(120,.3,.025,'sawtooth',.08)}
-function forestSound(){
- if(Math.random()<.32)sound(900+Math.random()*700,.08,.004,'sine');
- if(Math.random()<.12)sound(180+Math.random()*90,.45,.006,'triangle');
-}
-function drawVehicle(){
- if(mode!=='drive')return;
- const horizon=H*.68;
- ctx.save();
- ctx.globalAlpha=.98;
- const grd=ctx.createLinearGradient(0,horizon,W,horizon+H*.34);
- grd.addColorStop(0,'#101416');grd.addColorStop(1,'#050607');
- ctx.fillStyle=grd;ctx.beginPath();ctx.moveTo(0,H);ctx.lineTo(0,horizon+45);ctx.lineTo(W*.19,horizon+18);ctx.lineTo(W*.81,horizon+18);ctx.lineTo(W,H);ctx.closePath();ctx.fill();
- ctx.fillStyle='#1a2021';ctx.fillRect(W*.39,H*.75,W*.22,H*.25);
- ctx.strokeStyle='#343b3b';ctx.lineWidth=7;ctx.beginPath();ctx.arc(W*.5,H*.88,72,Math.PI*1.08,Math.PI*1.92);ctx.stroke();
- ctx.strokeStyle='#68706e';ctx.lineWidth=3;ctx.beginPath();ctx.arc(W*.5,H*.88,60,Math.PI*1.1,Math.PI*1.9);ctx.stroke();
- // hands/arms of the driver, kept non-graphic and stylized
- ctx.fillStyle='#59615e';ctx.beginPath();ctx.ellipse(W*.39,H*.92,18,52,-.22,0,Math.PI*2);ctx.ellipse(W*.61,H*.92,18,52,.22,0,Math.PI*2);ctx.fill();
- ctx.fillStyle='#0a0d0d';ctx.fillRect(W*.44,H*.77,W*.12,34);
- ctx.fillStyle='#bfc6bf';ctx.font='10px ui-monospace,monospace';ctx.textAlign='center';ctx.fillText('SPEED',W*.5,H*.83);
- ctx.restore();
-}
-function updateAudio(){
-if(!audio)return;let d=Math.hypot(px,pz-86),near=Math.max(0,1-d/70),ac=audio.ac;audio.wind.gain.setTargetAtTime(.045+near*.018,ac.currentTime,.7);audio.pulse.gain.setTargetAtTime(.002+near*.011,ac.currentTime,.6);
-}
-function game(now){
-let dt=Math.min(.05,(now-last)/1000);last=now;t+=dt;
-if(playing&&!won){
-  // Keep the player out of the impossible edge of the world and prevent NaN movement.
-let f=(keys.w?1:0)-(keys.s?1:0),s=(keys.d?1:0)-(keys.a?1:0),m=Math.hypot(f,s)||1,running=mode==='walk'&&keys.shift&&f>0&&stamina>0;
-yaw += ((keys.q?-1:0) + (keys.e?1:0))*dt*(mode==='drive'?1.25:.9);
-if(running)stamina=Math.max(0,stamina-dt*.24);else stamina=Math.min(1,stamina+dt*.12);
-let speed=mode==='drive'?.24:(running?.155:.085);px+=(Math.sin(yaw)*f+Math.cos(yaw)*s)/m*speed*dt*60;pz+=(Math.cos(yaw)*f-Math.sin(yaw)*s)/m*speed*dt*60;
-if(f||s){stepTimer-=dt;if(stepTimer<=0){if(mode==='walk')foot();else sound(48,.07,.018,'sine');stepTimer=running?.27:(mode==='drive'?.22:.46)}}else stepTimer=.05;
-if(mode==='drive')updateEngine(!!(f||s));
-if(Math.random()<dt*.22)forestSound();
-radioTimer-=dt;if(radioTimer<=0){radio();radioTimer=5+Math.random()*8;signal.textContent=Math.random()>.45?'SIGNAL: WEAK':'SIGNAL: SEARCHING'}
-scareTimer-=dt;if(scareTimer<=0&&pz>22){scareTimer=18+Math.random()*22;flash=.15;sound(180+Math.random()*50,.7,.012,'sine')}
-if(Math.hypot(px,pz-86)<5){
-  won=true; objective.textContent='OBJECTIVE COMPLETE: RELAY STATION FOUND';
-  signal.textContent='SIGNAL: LOCKED';
-  msg.textContent='The relay is still transmitting. Something changed in the woods.';
-  fade.style.opacity='.18'; sound(330,.7,.03); sound(495,.9,.018,'sine',.25);
-  document.exitPointerLock?.();
-}
-bar.style.width=(stamina*100)+'%';updateAudio();
-}
-draw();requestAnimationFrame(game);
-}
-start.onclick=(e)=>{e.preventDefault();begin('walk');};
-walkBtn.onclick=(e)=>{e.preventDefault();begin('walk');};
-driveBtn.onclick=(e)=>{e.preventDefault();begin('drive');};
-document.addEventListener('click',e=>{if(e.target===start||e.target===walkBtn||e.target===driveBtn)return;});
-function begin(selected){
- mode=selected; audioInit(); if(audio&&audio.ac.state==='suspended')audio.ac.resume();
- playing=true; started=true; paused=false; menu.style.display='none'; menu.style.pointerEvents='none'; menu.style.pointerEvents='none'; canvas.focus(); canvas.requestPointerLock?.();
- doorSound();
- if(mode==='drive'){startEngine(); objective.textContent='OBJECTIVE: DRIVE TO THE RELAY STATION'; msg.textContent='The engine is running. Drive carefully through the forest.'; sound(72,.6,.03,'sawtooth',.1);}
- else {objective.textContent='OBJECTIVE: REACH THE RELAY STATION'; msg.textContent='The road is quiet. Search for the old relay station.'; sound(150,.3,.02);}
-}
-addEventListener('keydown',e=>{if(e.key.toLowerCase()==='h'&&playing&&!won)hornSound();});
-requestAnimationFrame(game);
+(function(){
+'use strict';
+var c=document.getElementById('game'),x=c.getContext('2d'),menu=document.getElementById('menu'),hud=document.getElementById('hud'),start=document.getElementById('start'),choices=document.getElementById('choices'),walk=document.getElementById('walk'),drive=document.getElementById('drive'),pause=document.getElementById('pause'),resume=document.getElementById('resume'),obj=document.getElementById('obj'),sig=document.getElementById('sig'),msg=document.getElementById('msg');
+var w=0,h=0,d=1,t=0,last=0,running=false,isPaused=false,mode='walk',px=0,pz=0,yaw=0,keys={},audio=null;
+var trees=[],rocks=[];
+function resize(){d=Math.min(window.devicePixelRatio||1,2);w=window.innerWidth;h=window.innerHeight;c.width=Math.max(1,Math.floor(w*d));c.height=Math.max(1,Math.floor(h*d));x.setTransform(d,0,0,d,0,0);}
+window.addEventListener('resize',resize);resize();
+function rnd(n){var v=Math.sin(n*91.17)*43758.5453;return v-Math.floor(v);}
+for(var i=0;i<100;i++)trees.push({x:(rnd(i)-.5)*38,z:10+i*1.25,s:.7+rnd(i+20)*2.5});
+for(var j=0;j<70;j++)rocks.push({x:(rnd(j+100)-.5)*25,z:8+rnd(j+200)*115,s:.3+rnd(j+300)*1.2});
+function audioStart(){if(audio)return;var AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;var ac=new AC(),master=ac.createGain();master.gain.value=.22;master.connect(ac.destination);var o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.value=42;g.gain.value=.025;o.connect(g).connect(master);o.start();audio={ac:ac,master:master};}
+function beep(f,len,vol,type){if(!audio)return;var ac=audio.ac,o=ac.createOscillator(),g=ac.createGain();o.type=type||'sine';o.frequency.value=f;g.gain.value=vol;o.connect(g).connect(audio.master);o.start();g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+len);o.stop(ac.currentTime+len+.03);}
+function begin(m){mode=m;audioStart();if(audio&&audio.ac.state==='suspended')audio.ac.resume();running=true;isPaused=false;menu.style.display='none';hud.style.display='block';obj.innerHTML=m==='drive'?'OBJECTIVE: DRIVE TO THE RELAY<br><span>SIGNAL: SEARCHING</span>':'OBJECTIVE: REACH THE RELAY<br><span>SIGNAL: SEARCHING</span>';msg.textContent=m==='drive'?'WASD DRIVE · MOUSE LOOK · P PAUSE':'WASD MOVE · SHIFT RUN · MOUSE LOOK · P PAUSE';beep(120,.35,.03);c.requestPointerLock&&c.requestPointerLock();}
+start.addEventListener('click',function(e){e.preventDefault();choices.style.display='block';start.style.display='none';});
+walk.addEventListener('click',function(){begin('walk');});
+drive.addEventListener('click',function(){begin('drive');});
+resume.addEventListener('click',function(){isPaused=false;pause.style.display='none';c.requestPointerLock&&c.requestPointerLock();});
+window.addEventListener('keydown',function(e){keys[e.key.toLowerCase()]=true;if((e.key==='Escape'||e.key.toLowerCase()==='p')&&running){isPaused=!isPaused;pause.style.display=isPaused?'grid':'none';if(isPaused&&document.exitPointerLock)document.exitPointerLock();}});
+window.addEventListener('keyup',function(e){keys[e.key.toLowerCase()]=false;});
+document.addEventListener('mousemove',function(e){if(running&&!isPaused&&document.pointerLockElement===c)yaw+=e.movementX*.002;});
+c.addEventListener('click',function(){if(running&&!isPaused&&c.requestPointerLock)c.requestPointerLock();});
+function proj(wx,wz){var dx=wx-px,dz=wz-pz,co=Math.cos(yaw),si=Math.sin(yaw),cx=dx*co-dz*si,cz=dx*si+dz*co;if(cz<.5)return null;var f=Math.min(w,h)*.9/cz;return [w/2+cx*f,h*.53,f];}
+function sky(){var g=x.createLinearGradient(0,0,0,h*.55);g.addColorStop(0,'#02070a');g.addColorStop(.65,'#172326');g.addColorStop(1,'#303a3b');x.fillStyle=g;x.fillRect(0,0,w,h*.55);}
+function ground(){var g=x.createLinearGradient(0,h*.5,0,h);g.addColorStop(0,'#202727');g.addColorStop(1,'#050707');x.fillStyle=g;x.fillRect(0,h*.5,w,h*.5);x.fillStyle='#111516';x.beginPath();x.moveTo(w*.495,h*.5);x.lineTo(w*.505,h*.5);x.lineTo(w*.94,h);x.lineTo(w*.06,h);x.closePath();x.fill();}
+function tree(o){var q=proj(o.x,o.z);if(!q)return;var s=Math.max(2,Math.min(130,o.s*q[2]*.035));x.fillStyle='#080d0d';x.fillRect(q[0]-s*.06,q[1]-s*3,s*.12,s*3);x.beginPath();x.moveTo(q[0],q[1]-s*7);x.lineTo(q[0]-s*2,q[1]-s*1);x.lineTo(q[0]+s*2,q[1]-s*1);x.closePath();x.fill();}
+function rock(o){var q=proj(o.x,o.z);if(!q)return;var s=Math.max(1,o.s*q[2]*.02);x.fillStyle='#151b1b';x.beginPath();x.ellipse(q[0],q[1],s*1.5,s*.6,0,0,Math.PI*2);x.fill();}
+function relay(){var q=proj(0,86);if(!q)return;var r=Math.max(3,q[2]*.03),sx=q[0],sy=q[1]-q[2]*.08;x.fillStyle='#fff0b0';x.fillRect(sx-r/2,sy-r*2,r,r*2);x.fillRect(sx-r*3,sy-r*2.2,r*6,r*.25);x.globalAlpha=.12;x.fillStyle='#ffe8a0';x.beginPath();x.arc(sx,sy-r,Math.max(15,r*8),0,Math.PI*2);x.fill();x.globalAlpha=1;}
+function draw(){x.fillStyle='#020304';x.fillRect(0,0,w,h);sky();ground();for(var i=trees.length-1;i>=0;i--)tree(trees[i]);for(var j=rocks.length-1;j>=0;j--)rock(rocks[j]);relay();x.fillStyle='#000';var vg=x.createRadialGradient(w/2,h*.52,Math.min(w,h)*.22,w/2,h*.52,Math.max(w,h)*.75);vg.addColorStop(0,'#0000');vg.addColorStop(1,'#000c');x.fillStyle=vg;x.fillRect(0,0,w,h);}
+function loop(now){if(!last)last=now;var dt=Math.min(.05,(now-last)/1000);last=now;t+=dt;if(running&&!isPaused){var f=(keys.w?1:0)-(keys.s?1:0),s=(keys.d?1:0)-(keys.a?1:0),len=Math.hypot(f,s)||1,spd=mode==='drive'?.24:.11;px+=(Math.sin(yaw)*f+Math.cos(yaw)*s)/len*spd*dt*60;pz+=(Math.cos(yaw)*f-Math.sin(yaw)*s)/len*spd*dt*60;if(Math.hypot(px,pz-86)<5){obj.innerHTML='OBJECTIVE COMPLETE: RELAY FOUND<br><span>SIGNAL: LOCKED</span>';msg.textContent='The relay is still transmitting.';beep(330,.5,.04);running=false;if(document.exitPointerLock)document.exitPointerLock();}sig.textContent='SIGNAL: '+(Math.max(0,100-Math.hypot(px,pz-86)*1.15)).toFixed(0)+'%';}draw();requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
 })();
-</script>
-</body>
-</html>
+</script></body></html>
