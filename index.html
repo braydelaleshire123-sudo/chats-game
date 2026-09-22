@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>CHAT'S GAME — THE SIGNAL</title>
+<title>CHAT'S GAME — THE SIGNAL: NIGHTFALL</title>
 <style>
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#020304;color:#e7ecec;font-family:Inter,system-ui,-apple-system,sans-serif}canvas{width:100%;height:100%;display:block;cursor:crosshair}
 #ui{position:fixed;inset:0;pointer-events:none;text-shadow:0 2px 10px #000}
@@ -14,27 +14,33 @@
 #fade{position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity 1s;z-index:4}
 #menu{position:fixed;inset:0;z-index:5;display:grid;place-items:center;background:radial-gradient(circle at 50% 43%,#1a2528 0,#080d0f 42%,#010203 100%)}.panel{width:min(610px,90vw);padding:46px;text-align:center;background:#05080ae8;border:1px solid #ffffff18;border-radius:14px;box-shadow:0 30px 120px #000}.panel h1{font-size:46px;letter-spacing:.14em;margin:0 0 4px}.panel .small{font:10px ui-monospace,monospace;letter-spacing:.22em;color:#758083}.panel p{color:#9da9ac;line-height:1.7}.panel button{margin-top:14px;padding:13px 28px;border:1px solid #ffffff28;border-radius:7px;background:#e7ecec;color:#071012;font-weight:800;letter-spacing:.1em;cursor:pointer}
 #help{font:10px ui-monospace,monospace;color:#6e797b;margin-top:18px}
+<style>
+#vignette{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 45%,rgba(0,0,0,.38) 100%);mix-blend-mode:multiply}
 </style>
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="ui"><div class="corner l">CHAT'S GAME // THE SIGNAL</div><div class="corner r"><b id="objective">OBJECTIVE: FOLLOW THE ROAD</b><br><span id="signal">SIGNAL: — — —</span></div><div id="cross"></div><div id="stamina"><i></i></div><div id="msg">WASD · SHIFT TO RUN · MOUSE TO LOOK · ESC RELEASE</div></div>
-<div id="fade"></div>
-<div id="menu"><div class="panel"><div class="small">FIELD RECORDING 07</div><h1>THE SIGNAL</h1><p>The road shouldn't be here.<br>Neither should the transmission.</p><p>Follow the road until you find the source. Pay attention to the lights.</p><button id="start">ENTER</button><div id="help">AUDIO IS PROCEDURALLY GENERATED IN YOUR BROWSER</div></div></div>
+<div id="ui"><div class="corner l">CHAT'S GAME // THE SIGNAL: NIGHTFALL</div><div class="corner r"><b id="objective">OBJECTIVE: REACH THE RELAY STATION</b><br><span id="signal">SIGNAL: — — —</span></div><div id="cross"></div><div id="stamina"><i></i></div><div id="msg">WASD · SHIFT RUN · MOUSE LOOK · ESC RELEASE</div></div>
+<div id="vignette"></div><div id="fade"></div>
+<div id="menu"><div class="panel"><div class="small">FIELD RECORDING 08</div><h1>THE SIGNAL</h1><p>The road shouldn't be here.<br>Neither should the transmission.</p><p>Follow the road, search the ruins, and follow the signal. The light is only the beginning.</p><button id="start">ENTER</button><div id="help">AUDIO IS PROCEDURALLY GENERATED IN YOUR BROWSER</div></div></div>
 <script>
 (()=>{
 const canvas=document.getElementById('c'),ctx=canvas.getContext('2d',{alpha:false}),menu=document.getElementById('menu'),start=document.getElementById('start'),objective=document.getElementById('objective'),signal=document.getElementById('signal'),msg=document.getElementById('msg'),bar=document.querySelector('#stamina i'),fade=document.getElementById('fade');
 let W=0,H=0,D=1,t=0,last=performance.now(),playing=false,locked=false,won=false;
 let px=0,pz=0,yaw=0,pitch=0,stamina=1,shake=0,stepTimer=0,radioTimer=7,flash=0,scareTimer=0;
 const keys={};let audio=null;
-const trees=[],poles=[],rocks=[];
+const trees=[],poles=[],rocks=[],ruins=[],fireflies=[];
+for(let i=0;i<90;i++)fireflies.push({x:(hash(i+700)-.5)*34,z:18+hash(i+701)*72,y:.5+hash(i+702)*3,ph:hash(i+703)*6.28});
+for(let i=0;i<10;i++)ruins.push({x:(i%2?-1:1)*(7+hash(i+500)*8),z:34+hash(i+501)*46,w:1.8+hash(i+502)*2.5,h:1.2+hash(i+503)*2.2,a:hash(i+504)});
+
 function hash(n){let x=Math.sin(n*127.1)*43758.5453;return x-Math.floor(x)}
 for(let i=0;i<180;i++){let z=6+i*1.35+(hash(i)*.7),side=(hash(i+80)<.5?-1:1)*(6+hash(i+3)*17);trees.push({x:side,z,s:1+hash(i+9)*2.3,a:hash(i+2)});}
 for(let i=0;i<24;i++)poles.push({x:(i%2?1:-1)*5.2,z:15+i*4.4});
 for(let i=0;i<70;i++)rocks.push({x:(hash(i+200)-.5)*24,z:8+hash(i+201)*105,s:.15+hash(i+202)*.8});
 function resize(){D=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;canvas.width=W*D;canvas.height=H*D;ctx.setTransform(D,0,0,D,0,0)}addEventListener('resize',resize);resize();
 addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;if(e.key==='Escape')document.exitPointerLock?.()});addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
-canvas.addEventListener('click',()=>{if(playing&&!won)canvas.requestPointerLock?.()});document.addEventListener('pointerlockchange',()=>locked=document.pointerLockElement===canvas);
+canvas.addEventListener('click',()=>{if(playing&&!won)canvas.requestPointerLock?.()});
+document.addEventListener('visibilitychange',()=>{ if(document.hidden){ for(const k in keys)keys[k]=false; } });document.addEventListener('pointerlockchange',()=>locked=document.pointerLockElement===canvas);
 document.addEventListener('mousemove',e=>{if(locked){yaw+=e.movementX*.0022;pitch=Math.max(-.35,Math.min(.35,pitch-e.movementY*.0013));shake=Math.min(.7,shake+Math.abs(e.movementX)*.0004)}});
 function audioInit(){
 if(audio)return;const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
@@ -70,21 +76,67 @@ function drawPole(o){
 let q=project(o.x,o.z);if(!q)return;let [sx,sy,f]=q,s=Math.max(1,70/f);ctx.fillStyle='#101516';ctx.fillRect(sx-s*.5,sy-s*3.5,s, s*3.5);ctx.fillStyle='#c7c5a5';ctx.fillRect(sx-s*2.5,sy-s*3.55,s*5,.5);ctx.fillStyle='#e7d9a5';ctx.fillRect(sx-s*.25,sy-s*3.7,s*.5,s*.4);
 }
 function drawRock(o){let q=project(o.x,o.z);if(!q)return;let s=Math.max(1,o.s*q[2]*.022);ctx.fillStyle='#171d1d';ctx.beginPath();ctx.ellipse(q[0],q[1],s*1.6,s*.65,0,0,Math.PI*2);ctx.fill()}
+function drawRuins(o){
+  let q=project(o.x,o.z); if(!q)return;
+  let [sx,sy,f]=q, w=o.w*f*.035, h=o.h*f*.035;
+  if(w<1)return;
+  ctx.save(); ctx.globalAlpha=Math.min(.9,f/8);
+  ctx.fillStyle='#121817'; ctx.fillRect(sx-w,sy-h,w*2,h);
+  ctx.fillStyle='#1d2523'; ctx.fillRect(sx-w*.75,sy-h*.85,w*.35,h*.65);
+  ctx.fillStyle='#070a0a'; ctx.fillRect(sx+w*.05,sy-h*.58,w*.28,h*.58);
+  ctx.fillStyle='#2a302c'; ctx.fillRect(sx-w,sy-h,w*2,h*.07);
+  ctx.restore();
+}
+function drawFireflies(){
+  for(const o of fireflies){
+    const q=project(o.x,o.z); if(!q)continue;
+    const s=Math.max(.6,Math.min(3,q[2]*.012));
+    const yy=q[1]-o.y*q[2]*.015+Math.sin(t*1.5+o.ph)*3;
+    ctx.globalAlpha=.25+.25*Math.sin(t*2+o.ph);
+    ctx.fillStyle='#d9e7a8'; ctx.fillRect(q[0],yy,s,s);
+  }
+  ctx.globalAlpha=1;
+}
 function drawLight(){
 let q=project(0,86);if(!q)return;let r=Math.max(4,105/q[2]),sx=q[0],sy=q[1]-r*2.5;
 for(let i=7;i>0;i--){ctx.globalAlpha=.018;ctx.fillStyle='#ffe7ae';ctx.beginPath();ctx.arc(sx,sy,r*i*2.1,0,Math.PI*2);ctx.fill()}ctx.globalAlpha=1;ctx.fillStyle='#fff5ca';ctx.fillRect(sx-r*.13,sy-r*1.7,r*.26,r*1.7);ctx.fillRect(sx-r*.9,sy-r*1.9,r*1.8,r*.18);
 }
+function mountains(){
+  const hz=H*.52;
+  ctx.save(); ctx.globalAlpha=.65;
+  ctx.fillStyle='#0b1214'; ctx.beginPath(); ctx.moveTo(0,hz);
+  for(let x=0;x<=W;x+=24){
+    const y=hz-38-Math.sin(x*.008+1.2)*28-Math.sin(x*.021)*15;
+    ctx.lineTo(x,y);
+  }
+  ctx.lineTo(W,hz);ctx.closePath();ctx.fill();
+  ctx.globalAlpha=.22;ctx.fillStyle='#52605c';
+  ctx.beginPath();ctx.moveTo(0,hz);
+  for(let x=0;x<=W;x+=30){ctx.lineTo(x,hz-18-Math.sin(x*.012)*12)}
+  ctx.lineTo(W,hz);ctx.closePath();ctx.fill();ctx.restore();
+}
 function atmosphere(){
 let fog=ctx.createRadialGradient(W/2,H*.54,20,W/2,H*.54,Math.max(W,H)*.75);fog.addColorStop(0,'#ffffff00');fog.addColorStop(.55,'#06101218');fog.addColorStop(1,'#010203e8');ctx.fillStyle=fog;ctx.fillRect(0,0,W,H);
-let near=Math.max(0,1-pz/86);ctx.fillStyle='#b8d0d022';ctx.fillRect(0,0,W,H);
+let near=Math.max(0,1-pz/86);
+const fogStrength=.12+near*.08;
+const fog=ctx.createLinearGradient(0,H*.43,0,H);
+fog.addColorStop(0,'#9aa9a910'); fog.addColorStop(.45,'#78878312'); fog.addColorStop(1,'#02040466');
+ctx.fillStyle=fog;ctx.fillRect(0,0,W,H);
+ctx.fillStyle='#b8d0d0'+Math.round(fogStrength*255).toString(16).padStart(2,'0');ctx.fillRect(0,0,W,H);
 if(Math.sin(t*.33)>.985){ctx.fillStyle='#ffffff09';ctx.fillRect(0,0,W,H)}
+if(Math.sin(t*.17)>.995){ctx.fillStyle='#a8b8c408';ctx.fillRect(0,0,W,H)}
 if(flash>0){ctx.fillStyle='#d9eef022';ctx.fillRect(0,0,W,H);flash-=.025}
 }
 function draw(){
-ctx.fillStyle='#020304';ctx.fillRect(0,0,W,H);sky();ground();
-const all=[...rocks.map(o=>({z:o.z,type:0,o})),...trees.map(o=>({z:o.z,type:1,o})),...poles.map(o=>({z:o.z,type:2,o}))].sort((a,b)=>b.z-a.z);
-for(const a of all){if(a.type===0)drawRock(a.o);else if(a.type===1)drawTree(a.o);else drawPole(a.o)}
-drawLight();atmosphere();
+ctx.fillStyle='#020304';ctx.fillRect(0,0,W,H);sky();mountains();ground();
+const all=[
+ ...rocks.map(o=>({z:o.z,type:0,o})),
+ ...trees.map(o=>({z:o.z,type:1,o})),
+ ...poles.map(o=>({z:o.z,type:2,o})),
+ ...ruins.map(o=>({z:o.z,type:3,o}))
+].sort((a,b)=>b.z-a.z);
+for(const a of all){if(a.type===0)drawRock(a.o);else if(a.type===1)drawTree(a.o);else if(a.type===2)drawPole(a.o);else drawRuins(a.o)}
+drawLight();drawFireflies();atmosphere();
 }
 function updateAudio(){
 if(!audio)return;let d=Math.hypot(px,pz-86),near=Math.max(0,1-d/70),ac=audio.ac;audio.wind.gain.setTargetAtTime(.045+near*.018,ac.currentTime,.7);audio.pulse.gain.setTargetAtTime(.002+near*.011,ac.currentTime,.6);
@@ -92,18 +144,26 @@ if(!audio)return;let d=Math.hypot(px,pz-86),near=Math.max(0,1-d/70),ac=audio.ac;
 function game(now){
 let dt=Math.min(.05,(now-last)/1000);last=now;t+=dt;
 if(playing&&!won){
-let f=(keys.w?1:0)-(keys.s?1:0),s=(keys.d?1:0)-(keys.a?1:0),m=Math.hypot(f,s)||1,running=keys.shift&&keys.w&&stamina>0;
+  // Keep the player out of the impossible edge of the world and prevent NaN movement.
+let f=(keys.w?1:0)-(keys.s?1:0),s=(keys.d?1:0)-(keys.a?1:0),m=Math.hypot(f,s)||1,running=keys.shift&&f>0&&stamina>0;
+yaw += (keys.q?-1:0 + (keys.e?1:0))*dt*.9;
 if(running)stamina=Math.max(0,stamina-dt*.24);else stamina=Math.min(1,stamina+dt*.12);
-let speed=running?.155:.085;px+=(Math.sin(yaw)*f+Math.cos(yaw)*s)/m*speed*dt*60;pz+=(Math.cos(yaw)*f-Math.sin(yaw)*s)/m*speed*dt*60;
+let speed=running?.155:.085;px=(Math.sin(yaw)*f+Math.cos(yaw)*s)/m*speed*dt*60;pz+=(Math.cos(yaw)*f-Math.sin(yaw)*s)/m*speed*dt*60;
 if(f||s){stepTimer-=dt;if(stepTimer<=0){foot();stepTimer=running?.27:.46}}else stepTimer=.05;
-radioTimer-=dt;if(radioTimer<=0){radio();radioTimer=5+Math.random()*8;signal.textContent=Math.random()>.45?'SIGNAL: WEAK':'SIGNAL: — — —'}
+radioTimer-=dt;if(radioTimer<=0){radio();radioTimer=5+Math.random()*8;signal.textContent=Math.random()>.45?'SIGNAL: WEAK':'SIGNAL: SEARCHING'}
 scareTimer-=dt;if(scareTimer<=0&&pz>22){scareTimer=18+Math.random()*22;flash=.15;sound(180+Math.random()*50,.7,.012,'sine')}
-if(Math.hypot(px,pz-86)<4){won=true;objective.textContent='OBJECTIVE COMPLETE: SOURCE LOCATED';signal.textContent='SIGNAL: FOUND';msg.textContent='The transmission is coming from here.';fade.style.opacity='.28';sound(330,.7,.03);sound(495,.9,.018,'sine',.25);document.exitPointerLock?.()}
+if(Math.hypot(px,pz-86)<5){
+  won=true; objective.textContent='OBJECTIVE COMPLETE: RELAY STATION FOUND';
+  signal.textContent='SIGNAL: LOCKED';
+  msg.textContent='The relay is still transmitting. Something changed in the woods.';
+  fade.style.opacity='.18'; sound(330,.7,.03); sound(495,.9,.018,'sine',.25);
+  document.exitPointerLock?.();
+}
 bar.style.width=(stamina*100)+'%';updateAudio();
 }
 draw();requestAnimationFrame(game);
 }
-start.onclick=()=>{audioInit();if(audio&&audio.ac.state==='suspended')audio.ac.resume();playing=true;menu.style.display='none';canvas.requestPointerLock?.();sound(150,.3,.02);msg.textContent='The road is quiet. Keep moving.'};
+start.onclick=()=>{audioInit();if(audio&&audio.ac.state==='suspended')audio.ac.resume();playing=true;menu.style.display='none';canvas.requestPointerLock?.();sound(150,.3,.02);msg.textContent='The road is quiet. Search for the old relay station.'};
 requestAnimationFrame(game);
 })();
 </script>
