@@ -9,7 +9,7 @@
 <canvas id="game"></canvas>
 <div id="hud"><div class="tl">THE SIGNAL // NIGHTFALL</div><div class="tr" id="obj">OBJECTIVE: REACH THE RELAY<br><span id="sig">SIGNAL: SEARCHING</span></div><div class="cross"></div><div class="msg" id="msg">WASD MOVE · MOUSE LOOK · P PAUSE</div></div>
 <div id="pause"><div class="pause"><h2>PAUSED</h2><p>The signal is still out there.</p><button class="btn" id="resume">RESUME</button></div></div>
-<div id="menu"><div class="panel"><div class="small">FIELD RECORDING 08</div><h1>THE SIGNAL</h1><p>The road shouldn't be here.<br>Neither should the transmission.</p><p>Follow the road through the forest and find the relay station.</p><button class="btn" id="start">ENTER</button><div id="choices" style="display:none"><button class="btn" id="walk">WALK</button><button class="btn" id="drive">DRIVE</button></div><div style="margin-top:16px;font:10px monospace;color:#667274">AUDIO STARTS AFTER ENTER</div></div></div>
+<div id="menu"><div class="panel"><div class="small">FIELD RECORDING 08</div><h1>THE SIGNAL</h1><p>The road shouldn't be here.<br>Neither should the transmission.</p><p>Choose how you enter the forest.</p><button class="btn" id="start">ENTER</button><div id="choices" style="display:none"><button class="btn" id="walk">WALK</button><button class="btn" id="drive">DRIVE</button></div><div style="margin-top:16px;font:10px monospace;color:#667274">WALK: W/S MOVE · A/D TURN · MOUSE LOOK<br>DRIVE: W/S GAS/REVERSE · A/D STEER</div></div></div>
 <script>
 (function(){
 'use strict';
@@ -19,11 +19,11 @@ var trees=[],rocks=[];
 function resize(){d=Math.min(window.devicePixelRatio||1,2);w=window.innerWidth;h=window.innerHeight;c.width=Math.max(1,Math.floor(w*d));c.height=Math.max(1,Math.floor(h*d));x.setTransform(d,0,0,d,0,0);}
 window.addEventListener('resize',resize);resize();
 function rnd(n){var v=Math.sin(n*91.17)*43758.5453;return v-Math.floor(v);}
-for(var i=0;i<100;i++)trees.push({x:(rnd(i)-.5)*38,z:10+i*1.25,s:.7+rnd(i+20)*2.5});
-for(var j=0;j<70;j++)rocks.push({x:(rnd(j+100)-.5)*25,z:8+rnd(j+200)*115,s:.3+rnd(j+300)*1.2});
+for(var i=0;i<110;i++)trees.push({x:(rnd(i)-.5)*40,z:10+i*1.25,s:.7+rnd(i+20)*2.5});
+for(var j=0;j<75;j++)rocks.push({x:(rnd(j+100)-.5)*25,z:8+rnd(j+200)*115,s:.3+rnd(j+300)*1.2});
 function audioStart(){if(audio)return;var AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;var ac=new AC(),master=ac.createGain();master.gain.value=.22;master.connect(ac.destination);var o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.value=42;g.gain.value=.025;o.connect(g).connect(master);o.start();audio={ac:ac,master:master};}
 function beep(f,len,vol,type){if(!audio)return;var ac=audio.ac,o=ac.createOscillator(),g=ac.createGain();o.type=type||'sine';o.frequency.value=f;g.gain.value=vol;o.connect(g).connect(audio.master);o.start();g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+len);o.stop(ac.currentTime+len+.03);}
-function begin(m){mode=m;audioStart();if(audio&&audio.ac.state==='suspended')audio.ac.resume();running=true;isPaused=false;menu.style.display='none';hud.style.display='block';obj.innerHTML=m==='drive'?'OBJECTIVE: DRIVE TO THE RELAY<br><span>SIGNAL: SEARCHING</span>':'OBJECTIVE: REACH THE RELAY<br><span>SIGNAL: SEARCHING</span>';msg.textContent=m==='drive'?'WASD DRIVE · MOUSE LOOK · P PAUSE':'WASD MOVE · SHIFT RUN · MOUSE LOOK · P PAUSE';beep(120,.35,.03);c.requestPointerLock&&c.requestPointerLock();}
+function begin(m){mode=m;audioStart();if(audio&&audio.ac.state==='suspended')audio.ac.resume();running=true;isPaused=false;menu.style.display='none';hud.style.display='block';obj.innerHTML=m==='drive'?'OBJECTIVE: DRIVE TO THE RELAY<br><span>SIGNAL: SEARCHING</span>':'OBJECTIVE: REACH THE RELAY<br><span>SIGNAL: SEARCHING</span>';msg.textContent=m==='drive'?'W/S GAS · A/D STEER · MOUSE LOOK · P PAUSE':'W/S MOVE · A/D TURN · MOUSE LOOK · P PAUSE';beep(120,.35,.03);c.requestPointerLock&&c.requestPointerLock();}
 start.addEventListener('click',function(e){e.preventDefault();choices.style.display='block';start.style.display='none';});
 walk.addEventListener('click',function(){begin('walk');});
 drive.addEventListener('click',function(){begin('drive');});
@@ -33,13 +33,27 @@ window.addEventListener('keyup',function(e){keys[e.key.toLowerCase()]=false;});
 document.addEventListener('mousemove',function(e){if(running&&!isPaused&&document.pointerLockElement===c)yaw+=e.movementX*.002;});
 c.addEventListener('click',function(){if(running&&!isPaused&&c.requestPointerLock)c.requestPointerLock();});
 function proj(wx,wz){var dx=wx-px,dz=wz-pz,co=Math.cos(yaw),si=Math.sin(yaw),cx=dx*co-dz*si,cz=dx*si+dz*co;if(cz<.5)return null;var f=Math.min(w,h)*.9/cz;return [w/2+cx*f,h*.53,f];}
-function sky(){var g=x.createLinearGradient(0,0,0,h*.55);g.addColorStop(0,'#02070a');g.addColorStop(.65,'#172326');g.addColorStop(1,'#303a3b');x.fillStyle=g;x.fillRect(0,0,w,h*.55);}
-function ground(){var g=x.createLinearGradient(0,h*.5,0,h);g.addColorStop(0,'#202727');g.addColorStop(1,'#050707');x.fillStyle=g;x.fillRect(0,h*.5,w,h*.5);x.fillStyle='#111516';x.beginPath();x.moveTo(w*.495,h*.5);x.lineTo(w*.505,h*.5);x.lineTo(w*.94,h);x.lineTo(w*.06,h);x.closePath();x.fill();}
+function sky(){var g=x.createLinearGradient(0,0,0,h*.55);g.addColorStop(0,'#02070a');g.addColorStop(.65,'#172326');g.addColorStop(1,'#303a3b');x.fillStyle=g;x.fillRect(0,0,w,h*.55);x.fillStyle='#9daeb0';x.globalAlpha=.22;for(var i=0;i<55;i++)x.fillRect((i*173)%w,(i*71)%(h*.38),1,1);x.globalAlpha=1;}
+function ground(){var g=x.createLinearGradient(0,h*.5,0,h);g.addColorStop(0,'#202727');g.addColorStop(1,'#050707');x.fillStyle=g;x.fillRect(0,h*.5,w,h*.5);x.fillStyle='#111516';x.beginPath();x.moveTo(w*.495,h*.5);x.lineTo(w*.505,h*.5);x.lineTo(w*.94,h);x.lineTo(w*.06,h);x.closePath();x.fill();for(var z=7;z<120;z+=5){var q=proj(0,z);if(q){var yy=q[1];var spread=Math.min(w*.48,1200/q[2]);x.strokeStyle=z%10?'#1d2323':'#293031';x.lineWidth=Math.max(.7,45/q[2]);x.beginPath();x.moveTo(q[0]-spread,yy);x.lineTo(q[0]+spread,yy);x.stroke();}}}
 function tree(o){var q=proj(o.x,o.z);if(!q)return;var s=Math.max(2,Math.min(130,o.s*q[2]*.035));x.fillStyle='#080d0d';x.fillRect(q[0]-s*.06,q[1]-s*3,s*.12,s*3);x.beginPath();x.moveTo(q[0],q[1]-s*7);x.lineTo(q[0]-s*2,q[1]-s*1);x.lineTo(q[0]+s*2,q[1]-s*1);x.closePath();x.fill();}
 function rock(o){var q=proj(o.x,o.z);if(!q)return;var s=Math.max(1,o.s*q[2]*.02);x.fillStyle='#151b1b';x.beginPath();x.ellipse(q[0],q[1],s*1.5,s*.6,0,0,Math.PI*2);x.fill();}
 function relay(){var q=proj(0,86);if(!q)return;var r=Math.max(3,q[2]*.03),sx=q[0],sy=q[1]-q[2]*.08;x.fillStyle='#fff0b0';x.fillRect(sx-r/2,sy-r*2,r,r*2);x.fillRect(sx-r*3,sy-r*2.2,r*6,r*.25);x.globalAlpha=.12;x.fillStyle='#ffe8a0';x.beginPath();x.arc(sx,sy-r,Math.max(15,r*8),0,Math.PI*2);x.fill();x.globalAlpha=1;}
-function draw(){x.fillStyle='#020304';x.fillRect(0,0,w,h);sky();ground();for(var i=trees.length-1;i>=0;i--)tree(trees[i]);for(var j=rocks.length-1;j>=0;j--)rock(rocks[j]);relay();x.fillStyle='#000';var vg=x.createRadialGradient(w/2,h*.52,Math.min(w,h)*.22,w/2,h*.52,Math.max(w,h)*.75);vg.addColorStop(0,'#0000');vg.addColorStop(1,'#000c');x.fillStyle=vg;x.fillRect(0,0,w,h);}
-function loop(now){if(!last)last=now;var dt=Math.min(.05,(now-last)/1000);last=now;t+=dt;if(running&&!isPaused){var f=(keys.w?1:0)-(keys.s?1:0),s=(keys.d?1:0)-(keys.a?1:0),len=Math.hypot(f,s)||1,spd=mode==='drive'?.24:.11;px+=(Math.sin(yaw)*f+Math.cos(yaw)*s)/len*spd*dt*60;pz+=(Math.cos(yaw)*f-Math.sin(yaw)*s)/len*spd*dt*60;if(Math.hypot(px,pz-86)<5){obj.innerHTML='OBJECTIVE COMPLETE: RELAY FOUND<br><span>SIGNAL: LOCKED</span>';msg.textContent='The relay is still transmitting.';beep(330,.5,.04);running=false;if(document.exitPointerLock)document.exitPointerLock();}sig.textContent='SIGNAL: '+(Math.max(0,100-Math.hypot(px,pz-86)*1.15)).toFixed(0)+'%';}draw();requestAnimationFrame(loop);}
+function carInterior(){if(mode!=='drive')return;
+var base=h*.72;
+var grad=x.createLinearGradient(0,base,0,h);grad.addColorStop(0,'#151a1b');grad.addColorStop(1,'#050607');x.fillStyle=grad;x.beginPath();x.moveTo(0,h);x.lineTo(0,base+25);x.lineTo(w*.23,base);x.lineTo(w*.77,base);x.lineTo(w,base+25);x.lineTo(w,h);x.closePath();x.fill();
+x.fillStyle='#090c0c';x.fillRect(w*.39,base+8,w*.22,h-base-8);
+x.strokeStyle='#303736';x.lineWidth=8;x.beginPath();x.arc(w*.5,h*.92,Math.min(105,w*.12),Math.PI*1.08,Math.PI*1.92);x.stroke();
+x.strokeStyle='#717976';x.lineWidth=3;x.beginPath();x.arc(w*.5,h*.92,Math.min(92,w*.105),Math.PI*1.08,Math.PI*1.92);x.stroke();
+var bob=Math.sin(t*7)*2;
+x.save();x.translate(0,bob);
+x.fillStyle='#56605d';x.beginPath();x.ellipse(w*.39,h*.91,20,62,-.22,0,Math.PI*2);x.ellipse(w*.61,h*.91,20,62,.22,0,Math.PI*2);x.fill();
+x.fillStyle='#707975';x.beginPath();x.arc(w*.39,h*.83,13,0,Math.PI*2);x.arc(w*.61,h*.83,13,0,Math.PI*2);x.fill();
+x.restore();
+x.fillStyle='#b8c0bd';x.font='10px monospace';x.textAlign='center';x.fillText('SPEED',w*.5,base+42);
+x.fillStyle='#222827';x.fillRect(w*.465,base+50,w*.07,22);
+}
+function draw(){x.fillStyle='#020304';x.fillRect(0,0,w,h);sky();ground();for(var i=trees.length-1;i>=0;i--)tree(trees[i]);for(var j=rocks.length-1;j>=0;j--)rock(rocks[j]);relay();var vg=x.createRadialGradient(w/2,h*.52,Math.min(w,h)*.22,w/2,h*.52,Math.max(w,h)*.75);vg.addColorStop(0,'#0000');vg.addColorStop(1,'#000d');x.fillStyle=vg;x.fillRect(0,0,w,h);carInterior();}
+function loop(now){if(!last)last=now;var dt=Math.min(.05,(now-last)/1000);last=now;t+=dt;if(running&&!isPaused){var f=(keys.w?1:0)-(keys.s?1:0);var turn=(keys.d?1:0)-(keys.a?1:0);if(mode==='walk'){yaw+=turn*1.35*dt;}else{yaw+=turn*1.0*dt;}var spd=mode==='drive'?.24:.11;px+=Math.sin(yaw)*f*spd*dt*60;pz+=Math.cos(yaw)*f*spd*dt*60;if(Math.hypot(px,pz-86)<5){obj.innerHTML='OBJECTIVE COMPLETE: RELAY FOUND<br><span>SIGNAL: LOCKED</span>';msg.textContent='The relay is still transmitting.';beep(330,.5,.04);running=false;if(document.exitPointerLock)document.exitPointerLock();}sig.textContent='SIGNAL: '+(Math.max(0,100-Math.hypot(px,pz-86)*1.15)).toFixed(0)+'%';}draw();requestAnimationFrame(loop);}
 requestAnimationFrame(loop);
 })();
 </script></body></html>
