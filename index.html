@@ -211,6 +211,9 @@ bar.style.width=(stamina*100)+'%';updateAudio();
 draw();requestAnimationFrame(game);
 }
 start.onclick=(e)=>{e.preventDefault();begin('walk');};
+walkBtn.onclick=(e)=>{e.preventDefault();begin('walk');};
+driveBtn.onclick=(e)=>{e.preventDefault();begin('drive');};
+document.addEventListener('click',e=>{if(e.target===start||e.target===walkBtn||e.target===driveBtn)return;});
 function begin(selected){
  mode=selected; audioInit(); if(audio&&audio.ac.state==='suspended')audio.ac.resume();
  playing=true; started=true; paused=false; menu.style.display='none'; menu.style.pointerEvents='none'; menu.style.pointerEvents='none'; canvas.focus(); canvas.requestPointerLock?.();
@@ -218,8 +221,6 @@ function begin(selected){
  if(mode==='drive'){startEngine(); objective.textContent='OBJECTIVE: DRIVE TO THE RELAY STATION'; msg.textContent='The engine is running. Drive carefully through the forest.'; sound(72,.6,.03,'sawtooth',.1);}
  else {objective.textContent='OBJECTIVE: REACH THE RELAY STATION'; msg.textContent='The road is quiet. Search for the old relay station.'; sound(150,.3,.02);}
 }
-walkBtn.onclick=(e)=>{e.preventDefault();begin('walk');};
-driveBtn.onclick=(e)=>{e.preventDefault();begin('drive');};
 addEventListener('keydown',e=>{if(e.key.toLowerCase()==='h'&&playing&&!won)hornSound();});
 requestAnimationFrame(game);
 })();
